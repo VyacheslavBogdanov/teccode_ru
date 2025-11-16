@@ -1,13 +1,20 @@
 <template>
 	<div id="app">
-		<h1 class="title">TEMPLATE_VUE_3_VITE</h1>
-		<h2 class="title">TEMPLATE_VUE_3_VITE</h2>
-		<h3 class="title">TEMPLATE_VUE_3_VITE</h3>
-		<h4 class="title">TEMPLATE_VUE_3_VITE</h4>
-		<h5 class="title">TEMPLATE_VUE_3_VITE</h5>
+		<Header />
+		<router-view />
+		<!-- <Footer /> -->
 	</div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Header from './components/Header.vue';
+import Footer from './components/Footer.vue';
+</script>
 
-<style lang="scss" scoped></style>
+<style scoped lang="scss">
+#app {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+</style>

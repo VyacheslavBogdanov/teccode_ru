@@ -49,7 +49,12 @@
 .hero {
 	padding: 10rem 1rem;
 	position: relative;
+	min-height: 90vh;
 	color: #e0e0e0;
+	background-image: url('../assets/images/ai.png');
+	background-repeat: no-repeat;
+	background-position: center bottom;
+	background-size: 45vw;
 
 	&__container {
 		display: grid;
@@ -99,12 +104,22 @@
 		margin-bottom: 1.5rem;
 		text-align: justify;
 		text-shadow: 0 0 10px rgba(255, 60, 60, 0.3);
+
+		@media (max-width: 767px) {
+			font-size: 2.2rem;
+			text-align: left;
+		}
 	}
 
 	&__subtitle {
 		text-align: justify;
 		color: #ccc;
 		line-height: 1.8;
+		font-size: 1.05rem;
+
+		@media (max-width: 767px) {
+			font-size: 0.95rem;
+		}
 
 		b {
 			color: #ff3c3c;

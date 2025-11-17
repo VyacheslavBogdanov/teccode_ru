@@ -4,8 +4,20 @@
 			<RouterLink to="/" class="header__logo"><b>tech</b>code</RouterLink>
 
 			<nav class="header__nav">
-				<a href="#contact" class="header__cta-link">Написать нам</a>
-				<RouterLink to="/directions" class="header__cta-link">Направления</RouterLink>
+				<RouterLink
+					to="/contact-form"
+					href="#contact"
+					class="header__cta-link"
+					:class="{ 'header__cta-link--active': route.name === 'ContactForm' }"
+					>Написать нам</RouterLink
+				>
+				<RouterLink
+					to="/directions"
+					class="header__cta-link"
+					:class="{ 'header__cta-link--active': route.name === 'Directions' }"
+				>
+					Направления
+				</RouterLink>
 				<a href="#products" class="header__cta-link">Программные решения</a>
 				<a href="#contacts" class="header__cta-link">Контакты</a>
 			</nav>
@@ -17,6 +29,9 @@
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 </script>
 
 <style scoped lang="scss">
@@ -28,6 +43,7 @@ import { RouterLink } from 'vue-router';
 	z-index: 100;
 	padding: 1rem 2rem;
 	color: $main-text-color;
+	background: $main-bg-color;
 
 	&__container {
 		max-width: 1200px;
@@ -72,6 +88,10 @@ import { RouterLink } from 'vue-router';
 		transition: color 0.3s;
 
 		&:hover {
+			color: $main-red-color;
+		}
+
+		&--active {
 			color: $main-red-color;
 		}
 	}

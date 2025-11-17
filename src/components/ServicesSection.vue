@@ -135,11 +135,34 @@
 </template>
 
 <script setup lang="ts">
-// логика тут не нужна, данные зашиты в разметку по заданию
+// логика не требуется — статический контент
 </script>
 
 <style scoped lang="scss">
 @use '../assets/styles/variables.scss' as *;
+
+/* Анимации как в HeroSection.vue */
+@keyframes fadeInLeft {
+	0% {
+		opacity: 0;
+		transform: translateX(-30px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@keyframes fadeInRight {
+	0% {
+		opacity: 0;
+		transform: translateX(30px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
 
 .services {
 	padding: 6rem 1rem;
@@ -166,6 +189,34 @@
 
 		@media (min-width: 960px) {
 			grid-template-columns: 1fr 1fr;
+		}
+
+		/* Анимация карточек при загрузке */
+		> .services__card {
+			opacity: 0;
+			animation-duration: 0.8s;
+			animation-timing-function: ease;
+			animation-fill-mode: forwards;
+		}
+
+		> .services__card:nth-child(1) {
+			animation-name: fadeInLeft;
+			animation-delay: 0.1s;
+		}
+
+		> .services__card:nth-child(2) {
+			animation-name: fadeInRight;
+			animation-delay: 0.2s;
+		}
+
+		> .services__card:nth-child(3) {
+			animation-name: fadeInLeft;
+			animation-delay: 0.3s;
+		}
+
+		> .services__card:nth-child(4) {
+			animation-name: fadeInRight;
+			animation-delay: 0.4s;
 		}
 	}
 

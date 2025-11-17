@@ -1,11 +1,11 @@
 <template>
 	<header class="header">
 		<div class="header__container">
-			<h1 class="header__logo"><b>tech</b>code</h1>
+			<RouterLink to="/" class="header__logo"><b>tech</b>code</RouterLink>
 
 			<nav class="header__nav">
 				<a href="#contact" class="header__cta-link">Написать нам</a>
-				<a href="#directions" class="header__cta-link">Направления</a>
+				<RouterLink to="/directions" class="header__cta-link">Направления</RouterLink>
 				<a href="#products" class="header__cta-link">Программные решения</a>
 				<a href="#contacts" class="header__cta-link">Контакты</a>
 			</nav>
@@ -15,7 +15,9 @@
 	</header>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { RouterLink } from 'vue-router';
+</script>
 
 <style scoped lang="scss">
 @use '../assets/styles/variables.scss' as *;

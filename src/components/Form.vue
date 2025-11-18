@@ -24,7 +24,7 @@
 			/>
 		</div>
 
-		<div class="form__field">
+		<div class="form__field form__field--full">
 			<label for="message" class="form__label">Ваше сообщение</label>
 			<textarea
 				id="message"
@@ -55,15 +55,12 @@ const message = ref('');
 const submitted = ref(false);
 
 const onSubmit = () => {
-	// Здесь можно будет интегрировать реальную отправку (API, почта и т.п.)
 	submitted.value = true;
 
-	// Простая очистка полей после отправки
 	name.value = '';
 	email.value = '';
 	message.value = '';
 
-	// Через пару секунд можно скрывать сообщение, если захочешь
 	setTimeout(() => {
 		submitted.value = false;
 	}, 4000);
@@ -74,46 +71,54 @@ const onSubmit = () => {
 @use '../assets/styles/variables.scss' as *;
 
 .form {
-	display: flex;
-	flex-direction: column;
-	gap: 1.5rem;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	column-gap: 2rem;
+	row-gap: 2rem;
+	width: 100%;
+
+	@media (max-width: 768px) {
+		grid-template-columns: 1fr;
+	}
 
 	&__field {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+	}
+
+	&__field--full {
+		grid-column: 1 / -1;
 	}
 
 	&__label {
 		font-size: 0.9rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		font-weight: 400;
+		text-transform: none;
 		color: rgba($main-text-color, 0.85);
+		margin-bottom: 0.35rem;
 	}
 
 	&__input,
 	&__textarea {
 		width: 100%;
-		border-radius: 10px;
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		background: rgba(0, 0, 0, 0.35);
-		padding: 0.75rem 1rem;
+		border: none;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+		background: transparent;
+		padding: 0.5rem 0;
 		font-size: 0.95rem;
 		color: $main-text-color;
 		outline: none;
 		transition:
 			border-color 0.2s ease,
-			box-shadow 0.2s ease,
-			background 0.2s ease;
+			box-shadow 0.2s ease;
 
 		&::placeholder {
-			color: rgba($main-text-color, 0.5);
+			color: rgba($main-text-color, 0.45);
 		}
 
 		&:focus {
-			border-color: $main-red-color;
-			box-shadow: 0 0 0 1px rgba($main-red-color, 0.5);
-			background: rgba(0, 0, 0, 0.6);
+			border-bottom-color: $main-red-color;
+			box-shadow: 0 1px 0 rgba($main-red-color, 0.6);
 		}
 	}
 
@@ -123,6 +128,7 @@ const onSubmit = () => {
 	}
 
 	&__actions {
+		grid-column: 1 / -1;
 		margin-top: 0.5rem;
 		display: flex;
 		flex-direction: column;

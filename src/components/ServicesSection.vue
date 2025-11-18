@@ -1,10 +1,13 @@
 <template>
 	<section class="services" id="directions">
 		<div class="services__container">
-			<h2 class="services__title">Направления деятельности</h2>
-
+			<div class="services__header">
+				<h2 class="services__title">Направления деятельности</h2>
+				<RouterLink to="/contact-form" class="services__order-btn">
+					Сделать заказ
+				</RouterLink>
+			</div>
 			<div class="services__grid">
-				<!-- Блок 1: Искусственный интеллект -->
 				<article class="services__card">
 					<h3 class="services__card-title">Искусственный интеллект</h3>
 					<p class="services__card-intro">
@@ -41,7 +44,6 @@
 					</p>
 				</article>
 
-				<!-- Блок 2: ПО для распределенных систем безопасности -->
 				<article class="services__card">
 					<h3 class="services__card-title">ПО для распределенных систем безопасности</h3>
 					<p class="services__card-intro">
@@ -76,7 +78,6 @@
 					</p>
 				</article>
 
-				<!-- Блок 3: Заказная разработка ПО -->
 				<article class="services__card">
 					<h3 class="services__card-title">Заказная разработка ПО</h3>
 					<p class="services__card-intro">
@@ -135,13 +136,12 @@
 </template>
 
 <script setup lang="ts">
-// логика не требуется — статический контент
+import { RouterLink } from 'vue-router';
 </script>
 
 <style scoped lang="scss">
 @use '../assets/styles/variables.scss' as *;
 
-/* Анимации как в HeroSection.vue */
 @keyframes fadeInLeft {
 	0% {
 		opacity: 0;
@@ -173,10 +173,56 @@
 		margin: 0 auto;
 	}
 
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1.5rem;
+		margin-bottom: 3rem;
+
+		@media (max-width: 767px) {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+
+	&__order-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.75rem 1.8rem;
+		border-radius: 999px;
+		border: 2px solid $main-red-color;
+		background: transparent;
+		color: $main-text-color;
+		font-size: 0.9rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		text-decoration: none;
+		cursor: pointer;
+		transition:
+			background 0.2s ease,
+			color 0.2s ease,
+			box-shadow 0.2s ease,
+			transform 0.1s ease;
+
+		&:hover {
+			background: $main-red-color;
+			color: #000;
+			box-shadow: 0 0 18px rgba($main-red-color, 0.6);
+		}
+
+		&:active {
+			transform: translateY(1px);
+			box-shadow: 0 0 10px rgba($main-red-color, 0.4);
+		}
+	}
+
 	&__title {
 		font-size: 2.2rem;
 		font-weight: 700;
-		margin-bottom: 3rem;
+		margin-bottom: 0;
 		text-align: left;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
@@ -223,8 +269,6 @@
 	&__card {
 		position: relative;
 		padding: 2rem;
-		border-radius: 16px;
-		background: rgba(0, 0, 0, 0.35);
 		border: 1px solid rgba(255, 255, 255, 0.06);
 		box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
 		overflow: hidden;

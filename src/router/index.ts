@@ -4,6 +4,7 @@ import HomePage from '@/pages/HomePage.vue';
 import ProductDetail from '@/pages/ProductDetail.vue';
 import DirectionsPage from '@/pages/DirectionsPage.vue';
 import ContactForm from '@/pages/ContactForm.vue';
+import Contacts from '@/pages/Contacts.vue';
 
 const routes: RouteRecordRaw[] = [
 	{
@@ -26,6 +27,11 @@ const routes: RouteRecordRaw[] = [
 		path: '/contact-form',
 		name: 'ContactForm',
 		component: ContactForm,
+	},
+	{
+		path: '/contacts',
+		name: 'Contacts',
+		component: Contacts,
 	},
 ];
 

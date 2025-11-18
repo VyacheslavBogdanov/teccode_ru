@@ -19,7 +19,12 @@
 					Направления
 				</RouterLink>
 				<a href="#products" class="header__cta-link">Программные решения</a>
-				<a href="#contacts" class="header__cta-link">Контакты</a>
+				<RouterLink
+					to="/contacts"
+					class="header__cta-link"
+					:class="{ 'header__cta-link--active': route.name === 'Contacts' }"
+					>Контакты</RouterLink
+				>
 			</nav>
 
 			<div class="header__login">Вход</div>

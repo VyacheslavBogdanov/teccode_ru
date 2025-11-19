@@ -37,15 +37,14 @@
 					</li>
 				</ul>
 			</div>
-
-			<!-- <div class="contacts__map">
+			<div class="contacts__map">
 				<iframe
 					class="contacts__map-frame"
 					src="https://yandex.ru/map-widget/v1/?text=%D0%A1%D0%B0%D0%BC%D0%B0%D1%80%D0%B0%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%BE%D0%B2%D1%81%D0%BA%D0%BE%D0%B5%20%D1%88%D0%BE%D1%81%D1%81%D0%B5%2C%204%20%D1%81%D1%82%D1%80%209&lang=ru_RU"
 					frameborder="0"
 					allowfullscreen
 				></iframe>
-			</div> -->
+			</div>
 		</div>
 	</section>
 </template>

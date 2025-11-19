@@ -18,7 +18,12 @@
 				>
 					Направления
 				</RouterLink>
-				<a href="#products" class="header__cta-link">Программные решения</a>
+				<RouterLink
+					to="/sofware-solutions"
+					class="header__cta-link"
+					:class="{ 'header__cta-link--active': route.name === 'SoftwareSolutions' }"
+					>Программные решения</RouterLink
+				>
 				<RouterLink
 					to="/contacts"
 					class="header__cta-link"
@@ -27,7 +32,7 @@
 				>
 			</nav>
 
-			<div class="header__login">Вход</div>
+			<!-- <div class="header__login">Вход</div> -->
 		</div>
 	</header>
 </template>

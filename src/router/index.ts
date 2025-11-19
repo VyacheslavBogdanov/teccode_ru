@@ -5,6 +5,7 @@ import ProductDetail from '@/pages/ProductDetail.vue';
 import DirectionsPage from '@/pages/DirectionsPage.vue';
 import ContactForm from '@/pages/ContactForm.vue';
 import Contacts from '@/pages/Contacts.vue';
+import SoftwareSolutions from '@/pages/SoftwareSolutions.vue';
 
 const routes: RouteRecordRaw[] = [
 	{
@@ -32,6 +33,11 @@ const routes: RouteRecordRaw[] = [
 		path: '/contacts',
 		name: 'Contacts',
 		component: Contacts,
+	},
+	{
+		path: '/sofware-solutions',
+		name: 'SoftwareSolutions',
+		component: SoftwareSolutions,
 	},
 ];
 

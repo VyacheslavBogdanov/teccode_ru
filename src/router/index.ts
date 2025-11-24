@@ -5,6 +5,7 @@ import DirectionsPage from '@/pages/DirectionsPage.vue';
 import ContactFormPage from '@/pages/ContactFormPage.vue';
 import ContactsPage from '@/pages/ContactsPage.vue';
 import SoftwareSolutionsPage from '@/pages/SoftwareSolutionsPage.vue';
+import ProductModulePage from '@/pages/ProductModulePage.vue';
 
 const routes: RouteRecordRaw[] = [
 	{
@@ -31,6 +32,11 @@ const routes: RouteRecordRaw[] = [
 		path: '/sofware-solutions',
 		name: 'SoftwareSolutions',
 		component: SoftwareSolutionsPage,
+	},
+	{
+		path: '/products/:slug',
+		name: 'ProductModule',
+		component: ProductModulePage,
 	},
 ];
 

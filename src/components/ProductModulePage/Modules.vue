@@ -1,51 +1,30 @@
 <template>
-	<section class="products" id="products">
-		<div class="products__container">
-			<header class="products__header">
-				<h2 class="products__title">Программные решения</h2>
-				<p class="products__subtitle">
-					Наша команда разработала ряд программных модулей в виде standalone-решений с
-					богатым API для интеграции в системы безопасности.
-				</p>
+	<section class="module" v-if="moduleItem">
+		<div class="module__container">
+			<p class="module__breadcrumb">Программные решения / {{ moduleItem.title }}</p>
+			<h1 class="module__title">{{ moduleItem.title }}</h1>
+			<p class="module__subtitle">
+				Здесь будет подробное описание данного программного модуля, его функциональности,
+				интеграций и вариантов внедрения. Сейчас это заглушка, чтобы настроить навигацию.
+			</p>
 
-				<RouterLink to="/contact-form" class="products__cta"> Запросить цену </RouterLink>
-			</header>
+			<RouterLink to="/contact-form" class="module__cta"> Запросить цену </RouterLink>
+			<ModuleDocuments />
+		</div>
+	</section>
 
-			<div class="products__grid">
-				<!-- <article
-					v-for="(moduleItem, index) in modules"
-					:key="moduleItem.title"
-					class="products__card"
-					:style="{ animationDelay: `${0.05 * index}s` }"
-				>
-					<div class="products__icon" aria-hidden="true">
-						{{ moduleItem.icon }}
-					</div>
-					<p class="products__name">
-						{{ moduleItem.title }}
-					</p>
-				</article> -->
-				<RouterLink
-					v-for="(moduleItem, index) in modules"
-					:key="moduleItem.slug"
-					class="products__card"
-					:to="{ name: 'ProductModule', params: { slug: moduleItem.slug } }"
-					:style="{ animationDelay: `${0.05 * index}s` }"
-				>
-					<div class="products__icon" aria-hidden="true">
-						{{ moduleItem.icon }}
-					</div>
-					<p class="products__name">
-						{{ moduleItem.title }}
-					</p>
-				</RouterLink>
-			</div>
+	<section v-else class="module module--not-found">
+		<div class="module__container">
+			<h1 class="module__title">Модуль не найден</h1>
+			<RouterLink to="/products" class="module__cta"> К списку модулей </RouterLink>
 		</div>
 	</section>
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router';
+import { computed } from 'vue';
+import { useRoute, RouterLink } from 'vue-router';
+import ModuleDocuments from './ModuleDocuments.vue';
 
 interface ModuleItem {
 	slug: string;
@@ -53,6 +32,7 @@ interface ModuleItem {
 	title: string;
 }
 
+// тот же массив, что и в Products.vue (можешь позже вынести в общий файл)
 const modules: ModuleItem[] = [
 	{ slug: 'fire-detector', icon: '🔥', title: 'Программный модуль «Детектор огня»' },
 	{
@@ -136,57 +116,46 @@ const modules: ModuleItem[] = [
 		title: 'Программный модуль «Распознавание автомобильных номеров»',
 	},
 ];
+
+const route = useRoute();
+
+const moduleItem = computed(() => modules.find((m) => m.slug === (route.params.slug as string)));
 </script>
 
 <style scoped lang="scss">
 @use '../../assets/styles/variables.scss' as *;
 
-@keyframes productsFadeInUp {
-	from {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-.products {
-	padding: 6rem 1rem 7rem;
+.module {
+	padding: 6rem 1rem;
 	color: $main-text-color;
-	text-align: center;
 
 	&__container {
-		max-width: 1200px;
+		max-width: 900px;
 		margin: 0 auto;
 	}
 
-	&__header {
-		max-width: 720px;
-		margin: 0 auto 3rem;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
+	&__breadcrumb {
+		font-size: 0.85rem;
+		color: rgba($main-text-color, 0.6);
+		margin-bottom: 0.75rem;
 	}
 
 	&__title {
-		font-size: 2.2rem;
+		font-size: 2.1rem;
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		margin-bottom: 0.25rem;
+		margin-bottom: 1.25rem;
 	}
 
 	&__subtitle {
-		font-size: 0.95rem;
-		color: rgba($main-text-color, 0.85);
+		font-size: 0.98rem;
+		color: rgba($main-text-color, 0.9);
 		line-height: 1.7;
+		margin-bottom: 2rem;
 	}
 
 	&__cta {
-		margin-top: 0.75rem;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -217,58 +186,6 @@ const modules: ModuleItem[] = [
 			transform: translateY(1px);
 			box-shadow: 0 0 10px rgba($main-red-color, 0.4);
 		}
-	}
-
-	&__grid {
-		margin-top: 2.5rem;
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 2.5rem 3rem;
-
-		@media (min-width: 768px) {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-		}
-
-		@media (min-width: 1100px) {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-		}
-	}
-
-	&__card {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-		padding: 1.75rem 1rem 1.5rem;
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
-		opacity: 0;
-		animation: productsFadeInUp 0.7s ease forwards;
-		transition:
-			transform 0.15s ease-out,
-			box-shadow 0.15s ease-out,
-			border-color 0.15s ease-out;
-		text-decoration: none;
-		color: inherit;
-		cursor: pointer;
-
-		&:hover {
-			transform: translateY(-4px);
-			box-shadow: 0 22px 55px rgba(0, 0, 0, 0.8);
-			border-color: rgba($main-red-color, 0.7);
-		}
-	}
-
-	&__icon {
-		font-size: 2.7rem;
-		line-height: 1;
-	}
-
-	&__name {
-		font-size: 0.95rem;
-		font-weight: 600;
-		line-height: 1.4;
-		color: rgba($main-text-color, 0.95);
 	}
 }
 </style>

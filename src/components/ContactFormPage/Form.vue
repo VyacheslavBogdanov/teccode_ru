@@ -68,7 +68,7 @@ const onSubmit = () => {
 </script>
 
 <style scoped lang="scss">
-@use '../assets/styles/variables.scss' as *;
+@use '../../assets/styles/variables.scss' as *;
 
 .form {
 	display: grid;

@@ -1,23 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import HomePage from '@/pages/HomePage.vue';
-import ProductDetail from '@/pages/ProductDetail.vue';
 import DirectionsPage from '@/pages/DirectionsPage.vue';
-import ContactForm from '@/pages/ContactForm.vue';
-import Contacts from '@/pages/Contacts.vue';
-import SoftwareSolutions from '@/pages/SoftwareSolutions.vue';
+import ContactFormPage from '@/pages/ContactFormPage.vue';
+import ContactsPage from '@/pages/ContactsPage.vue';
+import SoftwareSolutionsPage from '@/pages/SoftwareSolutionsPage.vue';
 
 const routes: RouteRecordRaw[] = [
 	{
 		path: '/',
 		name: 'Home',
 		component: HomePage,
-	},
-	{
-		path: '/products/:id',
-		name: 'ProductDetail',
-		component: ProductDetail,
-		props: true,
 	},
 	{
 		path: '/directions',
@@ -27,17 +20,17 @@ const routes: RouteRecordRaw[] = [
 	{
 		path: '/contact-form',
 		name: 'ContactForm',
-		component: ContactForm,
+		component: ContactFormPage,
 	},
 	{
 		path: '/contacts',
 		name: 'Contacts',
-		component: Contacts,
+		component: ContactsPage,
 	},
 	{
 		path: '/sofware-solutions',
 		name: 'SoftwareSolutions',
-		component: SoftwareSolutions,
+		component: SoftwareSolutionsPage,
 	},
 ];
 

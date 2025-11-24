@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import ServicesSection from '@/components/ServicesSection.vue';
+import ServicesSection from '@/components/DirectionPage/ServicesSection.vue';
 </script>
 
 <style scoped lang="scss">

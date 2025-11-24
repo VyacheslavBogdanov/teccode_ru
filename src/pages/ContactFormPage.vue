@@ -6,14 +6,13 @@
 				Оставьте ваши контактные данные и кратко опишите задачу — мы вернёмся с ответом и
 				предложением по дальнейшим шагам.
 			</p>
-
 			<Form />
 		</div>
 	</section>
 </template>
 
 <script setup lang="ts">
-import Form from '@/components/Form.vue';
+import Form from '@/components/ContactFormPage/Form.vue';
 </script>
 
 <style scoped lang="scss">

@@ -45,7 +45,7 @@ const route = useRoute();
 </script>
 
 <style scoped lang="scss">
-@use '../assets/styles/variables.scss' as *;
+@use '../../assets/styles/variables.scss' as *;
 
 .header {
 	position: sticky;

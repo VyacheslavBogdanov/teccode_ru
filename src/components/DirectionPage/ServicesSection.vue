@@ -140,7 +140,7 @@ import { RouterLink } from 'vue-router';
 </script>
 
 <style scoped lang="scss">
-@use '../assets/styles/variables.scss' as *;
+@use '../../assets/styles/variables.scss' as *;
 
 @keyframes fadeInLeft {
 	0% {

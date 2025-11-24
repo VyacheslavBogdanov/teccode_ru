@@ -51,7 +51,7 @@
 	position: relative;
 	min-height: 90vh;
 	color: #e0e0e0;
-	background-image: url('../assets/images/ai.png');
+	background-image: url('../../assets/images/ai.png');
 	background-repeat: no-repeat;
 	background-position: center bottom;
 	background-size: 45vw;

@@ -9,7 +9,9 @@
 			</p>
 
 			<RouterLink to="/contact-form" class="module__cta"> Запросить цену </RouterLink>
-			<ModuleDocuments />
+
+			<!-- Передаём в документы только нужный набор DocItem[] -->
+			<ModuleDocuments :documents="documents" />
 		</div>
 	</section>
 
@@ -25,6 +27,8 @@
 import { computed } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import ModuleDocuments from './ModuleDocuments.vue';
+import { useMainStore } from '../../stores/main';
+import type { DocItem } from '../../stores/main';
 
 interface ModuleItem {
 	slug: string;
@@ -118,8 +122,47 @@ const modules: ModuleItem[] = [
 ];
 
 const route = useRoute();
+const mainStore = useMainStore();
+
+// соответствие: какой модуль какие id документов использует
+const moduleDocumentIds: Record<string, string[]> = {
+	'fire-detector': [
+		'source-storage-description',
+		'installation-manual',
+		'operation-manual',
+		'activation-hardware-description',
+		'functional-spec',
+		'lifecycle-processes',
+		'program-info',
+	],
+	'employee-docs': [
+		'source-storage-description',
+		'installation-manual',
+		'operation-manual',
+		'functional-spec',
+		'lifecycle-processes',
+		'technical-architecture',
+	],
+	'rtsp-streaming': [
+		'source-storage-description',
+		'installation-manual',
+		'operation-manual',
+		'activation-hardware-description',
+		'functional-spec',
+		'lifecycle-processes',
+		'technical-architecture',
+	],
+};
 
 const moduleItem = computed(() => modules.find((m) => m.slug === (route.params.slug as string)));
+
+// превращаем ids в DocItem[] из стора
+const documents = computed<DocItem[]>(() => {
+	const slug = route.params.slug as string;
+	const ids = moduleDocumentIds[slug] ?? [];
+
+	return ids.map((id) => mainStore.getDocumentById(id)).filter((doc): doc is DocItem => !!doc);
+});
 </script>
 
 <style scoped lang="scss">

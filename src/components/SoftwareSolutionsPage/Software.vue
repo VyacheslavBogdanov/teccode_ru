@@ -12,19 +12,6 @@
 			</header>
 
 			<div class="products__grid">
-				<!-- <article
-					v-for="(moduleItem, index) in modules"
-					:key="moduleItem.title"
-					class="products__card"
-					:style="{ animationDelay: `${0.05 * index}s` }"
-				>
-					<div class="products__icon" aria-hidden="true">
-						{{ moduleItem.icon }}
-					</div>
-					<p class="products__name">
-						{{ moduleItem.title }}
-					</p>
-				</article> -->
 				<RouterLink
 					v-for="(moduleItem, index) in modules"
 					:key="moduleItem.slug"

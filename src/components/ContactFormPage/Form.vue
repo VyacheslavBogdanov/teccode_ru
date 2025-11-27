@@ -123,7 +123,7 @@ const onSubmit = () => {
 	}
 
 	&__textarea {
-		resize: vertical;
+		resize: none;
 		min-height: 140px;
 	}
 

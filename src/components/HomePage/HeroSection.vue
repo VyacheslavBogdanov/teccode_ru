@@ -54,7 +54,15 @@
 	background-image: url('../../assets/images/ai.png');
 	background-repeat: no-repeat;
 	background-position: center bottom;
-	background-size: 45vw;
+	background-size: 1000px auto;
+
+	@media (max-height: 1020px) {
+		background-size: 700px auto;
+	}
+
+	@media (max-width: 840px) {
+		background-size: 700px auto;
+	}
 
 	&__container {
 		display: grid;
@@ -64,7 +72,7 @@
 		margin: 0 auto;
 		align-items: center;
 
-		@media (max-width: 767px) {
+		@media (max-width: 1240px) {
 			grid-template-columns: 1fr;
 
 			.hero__divider {
@@ -105,7 +113,7 @@
 		text-align: justify;
 		text-shadow: 0 0 10px rgba(255, 60, 60, 0.3);
 
-		@media (max-width: 767px) {
+		@media (max-width: 1240px) {
 			font-size: 2.2rem;
 			text-align: left;
 		}
@@ -117,7 +125,7 @@
 		line-height: 1.8;
 		font-size: 1.05rem;
 
-		@media (max-width: 767px) {
+		@media (max-width: 1240px) {
 			font-size: 0.95rem;
 		}
 

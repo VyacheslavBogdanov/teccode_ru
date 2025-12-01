@@ -1,10 +1,10 @@
 <template>
-	<!-- Тень над всем сайтом -->
 	<div
 		v-if="visible"
 		class="cursor-shadow"
 		:style="{
-			transform: `translate3d(${x - size / 2}px, ${y - size / 2}px, 0)`,
+			left: x + 'px',
+			top: y + 'px',
 		}"
 	></div>
 </template>
@@ -12,12 +12,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
-const size = 40; // диаметр "тени" в пикселях
-
-const x = ref(window.innerWidth / 2);
-const y = ref(window.innerHeight / 2);
-const targetX = ref(x.value);
-const targetY = ref(y.value);
+const x = ref(0);
+const y = ref(0);
+const targetX = ref(0);
+const targetY = ref(0);
 const visible = ref(false);
 
 let rafId: number | null = null;
@@ -29,20 +27,30 @@ const handleMouseMove = (event: MouseEvent) => {
 };
 
 const animate = () => {
-	const ease = 0.15; // чем меньше, тем более плавно/инертно
+	const ease = 0.12;
 	x.value += (targetX.value - x.value) * ease;
 	y.value += (targetY.value - y.value) * ease;
 	rafId = window.requestAnimationFrame(animate);
 };
 
 onMounted(() => {
+	if (typeof window === 'undefined') return;
+
+	// стартуем примерно из центра
+	x.value = window.innerWidth / 2;
+	y.value = window.innerHeight / 2;
+	targetX.value = x.value;
+	targetY.value = y.value;
+
 	window.addEventListener('mousemove', handleMouseMove);
 	rafId = window.requestAnimationFrame(animate);
 });
 
 onBeforeUnmount(() => {
-	window.removeEventListener('mousemove', handleMouseMove);
-	if (rafId !== null) {
+	if (typeof window !== 'undefined') {
+		window.removeEventListener('mousemove', handleMouseMove);
+	}
+	if (rafId !== null && typeof window !== 'undefined') {
 		window.cancelAnimationFrame(rafId);
 	}
 });
@@ -56,13 +64,11 @@ onBeforeUnmount(() => {
 	width: 10px;
 	height: 10px;
 	border-radius: 50%;
-	pointer-events: none; // важно: чтобы не мешать кликам
+	pointer-events: none;
 
-	// стиль свечения в духе твоего сайта
+	transform: translate(-50%, -50%);
+
 	background: radial-gradient(circle, rgba(255, 60, 60, 0.4), rgba(0, 0, 0, 0));
-	box-shadow:
-		0 0 25px rgba(255, 60, 60, 0.6),
-		0 0 80px rgba(255, 60, 60, 0.4);
 
 	mix-blend-mode: screen;
 	opacity: 0.85;

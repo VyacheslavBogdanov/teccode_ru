@@ -6,6 +6,7 @@ import ContactFormPage from '@/pages/ContactFormPage.vue';
 import ContactsPage from '@/pages/ContactsPage.vue';
 import SoftwareSolutionsPage from '@/pages/SoftwareSolutionsPage.vue';
 import ProductModulePage from '@/pages/ProductModulePage.vue';
+import ModuleDocumentPage from '@/pages/ModuleDocumentPage.vue';
 
 const routes: RouteRecordRaw[] = [
 	{
@@ -37,6 +38,11 @@ const routes: RouteRecordRaw[] = [
 		path: '/products/:slug',
 		name: 'ProductModule',
 		component: ProductModulePage,
+	},
+	{
+		path: '/products/:slug/docs/:docId',
+		name: 'ProductModuleDocument',
+		component: ModuleDocumentPage,
 	},
 ];
 

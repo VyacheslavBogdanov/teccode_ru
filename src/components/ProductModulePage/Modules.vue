@@ -11,7 +11,7 @@
 			<RouterLink to="/contact-form" class="module__cta"> Запросить цену </RouterLink>
 
 			<!-- Передаём в документы только нужный набор DocItem[] -->
-			<ModuleDocuments :documents="documents" />
+			<ModuleDocuments :documents="documents" :moduleSlug="moduleItem.slug" />
 		</div>
 	</section>
 

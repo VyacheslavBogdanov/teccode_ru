@@ -1,26 +1,26 @@
 <template>
 	<section class="docs" v-if="documents.length">
 		<div class="docs__container">
-			<a
+			<RouterLink
 				v-for="doc in documents"
 				:key="doc.id"
 				class="docs__item"
-				:href="doc.url"
-				target="_blank"
-				rel="noopener"
+				:to="{ name: 'ProductModuleDocument', params: { slug: moduleSlug, docId: doc.id } }"
 			>
 				<span class="docs__icon" aria-hidden="true">PDF</span>
 				<span class="docs__title">{{ doc.title }}</span>
-			</a>
+			</RouterLink>
 		</div>
 	</section>
 </template>
 
 <script setup lang="ts">
-import type { DocItem } from '../../stores/main';
+import { RouterLink } from 'vue-router';
+import type { DocItem } from '@/stores/main';
 
-const props = defineProps<{
+defineProps<{
 	documents: DocItem[];
+	moduleSlug: string;
 }>();
 </script>
 

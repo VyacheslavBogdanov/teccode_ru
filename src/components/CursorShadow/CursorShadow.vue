@@ -36,7 +36,6 @@ const animate = () => {
 onMounted(() => {
 	if (typeof window === 'undefined') return;
 
-	// стартуем примерно из центра
 	x.value = window.innerWidth / 2;
 	y.value = window.innerHeight / 2;
 	targetX.value = x.value;
@@ -61,8 +60,8 @@ onBeforeUnmount(() => {
 	position: fixed;
 	top: 0;
 	left: 0;
-	width: 10px;
-	height: 10px;
+	width: 7px;
+	height: 7px;
 	border-radius: 50%;
 	pointer-events: none;
 

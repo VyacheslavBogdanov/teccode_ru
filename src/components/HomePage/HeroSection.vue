@@ -74,10 +74,8 @@
 
 		@media (max-width: 1240px) {
 			grid-template-columns: 1fr;
-
-			.hero__divider {
-				display: none;
-			}
+			justify-items: center;
+			gap: 0.5rem;
 		}
 	}
 
@@ -102,6 +100,12 @@
 		height: 80%;
 		background: rgba(255, 255, 255, 0.08);
 		justify-self: center;
+
+		@media (max-width: 1240px) {
+			width: 60%;
+			height: 1px;
+			margin: 2rem auto;
+		}
 	}
 
 	&__title {

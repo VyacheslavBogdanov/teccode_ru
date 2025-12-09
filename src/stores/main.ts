@@ -1,4 +1,3 @@
-// src/stores/mainStore.ts
 import { defineStore } from 'pinia';
 
 export interface DocItem {
@@ -17,7 +16,6 @@ export const useMainStore = defineStore('main', {
 	state: (): MainState => ({
 		companyName: 'TechCode',
 		year: new Date().getFullYear(),
-		// полный список всех типов документов, общих для всех модулей
 		documents: [
 			{
 				id: 'source-storage-description',

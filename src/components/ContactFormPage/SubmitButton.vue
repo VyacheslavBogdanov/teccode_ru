@@ -4,9 +4,7 @@
 	</button>
 </template>
 
-<script setup lang="ts">
-// Дополнительная логика не требуется — кнопка управляется формой
-</script>
+<script setup lang="ts"></script>
 
 <style scoped lang="scss">
 @use '../../assets/styles/variables.scss' as *;

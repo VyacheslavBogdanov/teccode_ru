@@ -31,8 +31,6 @@
 					>Контакты</RouterLink
 				>
 			</nav>
-
-			<!-- <div class="header__login">Вход</div> -->
 		</div>
 	</header>
 </template>
@@ -55,6 +53,18 @@ const route = useRoute();
 	color: $main-text-color;
 	background: $main-bg-color;
 
+	@media (max-width: 1240px) {
+		padding: 0.75rem 1.5rem;
+	}
+
+	@media (max-width: 930px) {
+		padding: 0.75rem 1.25rem;
+	}
+
+	@media (max-width: 500px) {
+		padding: 0.5rem 1rem;
+	}
+
 	&__container {
 		max-width: 1200px;
 		margin: 0 auto;
@@ -63,6 +73,23 @@ const route = useRoute();
 		justify-content: space-between;
 		align-items: center;
 		gap: 1rem;
+
+		@media (max-width: 1240px) {
+			max-width: 1000px;
+			gap: 0.75rem;
+		}
+
+		@media (max-width: 930px) {
+			max-width: 100%;
+			justify-content: center;
+			row-gap: 0.5rem;
+		}
+
+		@media (max-width: 500px) {
+			flex-direction: column;
+			align-items: center;
+			row-gap: 0.4rem;
+		}
 	}
 
 	&__logo {
@@ -74,6 +101,21 @@ const route = useRoute();
 			color: $main-red-color;
 			font-weight: 700;
 		}
+
+		@media (max-width: 1240px) {
+			font-size: 1.4rem;
+		}
+
+		@media (max-width: 930px) {
+			order: 1;
+			width: 100%;
+			text-align: center;
+		}
+
+		@media (max-width: 500px) {
+			text-align: center;
+			font-size: 1.25rem;
+		}
 	}
 
 	&__nav {
@@ -81,10 +123,18 @@ const route = useRoute();
 		flex-wrap: wrap;
 		gap: 1.5rem;
 
-		@media (max-width: 767px) {
+		@media (max-width: 1240px) {
+			gap: 1.25rem;
+		}
+
+		@media (max-width: 930px) {
+			order: 2;
 			width: 100%;
 			justify-content: center;
-			order: 3;
+		}
+
+		@media (max-width: 500px) {
+			gap: 0.75rem;
 		}
 	}
 
@@ -96,6 +146,20 @@ const route = useRoute();
 		text-decoration: none;
 		text-transform: uppercase;
 		transition: color 0.3s;
+		white-space: nowrap;
+
+		@media (max-width: 1240px) {
+			font-size: 0.85rem;
+			padding: 0.4rem 0.8rem;
+		}
+
+		@media (max-width: 930px) {
+			text-align: center;
+		}
+
+		@media (max-width: 500px) {
+			font-size: 0.8rem;
+		}
 
 		&:hover {
 			color: $main-red-color;
@@ -116,18 +180,11 @@ const route = useRoute();
 			color: $main-red-color;
 		}
 
-		@media (max-width: 767px) {
+		@media (max-width: 930px) {
+			order: 3;
 			width: 100%;
 			text-align: center;
-			order: 2;
-		}
-	}
-
-	@media (max-width: 767px) {
-		&__logo {
-			width: 100%;
-			text-align: center;
-			order: 1;
+			margin-top: 0.25rem;
 		}
 	}
 }

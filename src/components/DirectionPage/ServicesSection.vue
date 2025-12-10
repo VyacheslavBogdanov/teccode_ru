@@ -180,7 +180,7 @@ import { RouterLink } from 'vue-router';
 		gap: 1.5rem;
 		margin-bottom: 3rem;
 
-		@media (max-width: 767px) {
+		@media (max-width: 960px) {
 			flex-direction: column;
 			align-items: flex-start;
 		}
@@ -237,7 +237,6 @@ import { RouterLink } from 'vue-router';
 			grid-template-columns: 1fr 1fr;
 		}
 
-		/* Анимация карточек при загрузке */
 		> .services__card {
 			opacity: 0;
 			animation-duration: 0.8s;

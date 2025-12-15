@@ -1,4 +1,6 @@
 @use './variables.scss' as *;
+@use './mixins.scss' as m;
+@use './animations.scss';
 
 * {
 	box-sizing: border-box;
@@ -7,11 +9,17 @@
 	color: $main-text-color;
 }
 
+html {
+	scroll-behavior: smooth;
+}
+
 body {
-	font-family: 'Segoe UI', sans-serif;
+	font-family:
+		Segoe UI,
+		sans-serif;
 	font-size: 16px;
-	background: $main-bg-color;
 	line-height: 1.6;
+	background: $main-bg-color;
 }
 
 a {
@@ -25,6 +33,19 @@ ul {
 
 button {
 	font-family: inherit;
+}
+
+// DRY UI classes (общие “кирпичики”)
+.ui-panel {
+	@include m.ui-panel;
+}
+
+.ui-card {
+	@include m.ui-card;
+}
+
+.ui-cta {
+	@include m.ui-cta;
 }
 
 .container {

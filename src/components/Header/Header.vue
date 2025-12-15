@@ -1,35 +1,44 @@
 <template>
 	<header class="header">
 		<div class="header__container">
-			<RouterLink to="/" class="header__logo"><b>tech</b><hr></hr>code</RouterLink>
+			<RouterLink :to="ROUTES.home.path" class="header__logo">
+				<b>tech</b>
+				<hr />
+				code
+			</RouterLink>
 
 			<nav class="header__nav">
 				<RouterLink
-					to="/contact-form"
-					href="#contact"
+					:to="ROUTES.contactForm.path"
 					class="header__cta-link"
-					:class="{ 'header__cta-link--active': route.name === 'ContactForm' }"
-					>Написать нам</RouterLink
+					active-class="header__cta-link--active"
 				>
+					Написать нам
+				</RouterLink>
+
 				<RouterLink
-					to="/directions"
+					:to="ROUTES.directions.path"
 					class="header__cta-link"
-					:class="{ 'header__cta-link--active': route.name === 'Directions' }"
+					active-class="header__cta-link--active"
 				>
 					Направления
 				</RouterLink>
+
 				<RouterLink
-					to="/sofware-solutions"
+					:to="ROUTES.softwareSolutions.path"
 					class="header__cta-link"
-					:class="{ 'header__cta-link--active': route.name === 'SoftwareSolutions' }"
-					>Программные решения</RouterLink
+					active-class="header__cta-link--active"
 				>
+					Программные решения
+				</RouterLink>
+
 				<RouterLink
-					to="/contacts"
+					:to="ROUTES.contacts.path"
 					class="header__cta-link"
-					:class="{ 'header__cta-link--active': route.name === 'Contacts' }"
-					>Контакты</RouterLink
+					active-class="header__cta-link--active"
 				>
+					Контакты
+				</RouterLink>
 			</nav>
 		</div>
 	</header>
@@ -37,9 +46,7 @@
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-import { useRoute } from 'vue-router';
-
-const route = useRoute();
+import { ROUTES } from '@/router/routes';
 </script>
 
 <style scoped lang="scss">
@@ -74,13 +81,7 @@ const route = useRoute();
 		align-items: center;
 		gap: 1rem;
 
-		@media (max-width: 1240px) {
-			max-width: 1000px;
-			gap: 0.75rem;
-		}
-
 		@media (max-width: 930px) {
-			max-width: 100%;
 			justify-content: center;
 			row-gap: 0.5rem;
 		}
@@ -107,9 +108,8 @@ const route = useRoute();
 		}
 
 		@media (max-width: 930px) {
-			order: 1;
 			width: 100%;
-			text-align: center;
+			text-align: left;
 		}
 
 		@media (max-width: 500px) {
@@ -128,7 +128,6 @@ const route = useRoute();
 		}
 
 		@media (max-width: 930px) {
-			order: 2;
 			width: 100%;
 			justify-content: center;
 		}
@@ -143,7 +142,6 @@ const route = useRoute();
 		font-weight: 100;
 		padding: 0.5rem 1rem;
 		color: $main-text-color;
-		text-decoration: none;
 		text-transform: uppercase;
 		transition: color 0.3s;
 		white-space: nowrap;
@@ -151,10 +149,6 @@ const route = useRoute();
 		@media (max-width: 1240px) {
 			font-size: 0.85rem;
 			padding: 0.4rem 0.8rem;
-		}
-
-		@media (max-width: 930px) {
-			text-align: center;
 		}
 
 		@media (max-width: 500px) {
@@ -169,27 +163,5 @@ const route = useRoute();
 			color: $main-red-color;
 		}
 	}
-
-	&__login {
-		font-size: 0.9rem;
-		font-weight: 100;
-		text-transform: uppercase;
-		cursor: pointer;
-
-		&:hover {
-			color: $main-red-color;
-		}
-
-		@media (max-width: 930px) {
-			order: 3;
-			width: 100%;
-			text-align: center;
-			margin-top: 0.25rem;
-		}
-	}
-}
-
-html {
-	scroll-behavior: smooth;
 }
 </style>

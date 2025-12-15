@@ -1,7 +1,7 @@
 <template>
 	<header class="header">
 		<div class="header__container">
-			<RouterLink to="/" class="header__logo"><b>tech</b>code</RouterLink>
+			<RouterLink to="/" class="header__logo"><b>tech</b><hr></hr>code</RouterLink>
 
 			<nav class="header__nav">
 				<RouterLink

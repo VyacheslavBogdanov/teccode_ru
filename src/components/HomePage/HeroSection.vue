@@ -8,7 +8,9 @@
 					безопасности объекта
 				</p>
 			</div>
+
 			<div class="hero__divider"></div>
+
 			<div class="hero__column hero__column--right">
 				<p class="hero__subtitle">
 					<b>Технокод</b> — инновационная ИТ-компания, специализирующаяся на внедрении
@@ -24,48 +26,26 @@
 <script setup lang="ts"></script>
 
 <style scoped lang="scss">
-@keyframes fadeInLeft {
-	0% {
-		opacity: 0;
-		transform: translateX(-30px);
-	}
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-@keyframes fadeInRight {
-	0% {
-		opacity: 0;
-		transform: translateX(30px);
-	}
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
 .hero {
 	padding: 10rem 1rem;
 	position: relative;
 	min-height: 90vh;
 	color: #e0e0e0;
+
 	background-image: url('../../assets/images/ai.png');
 	background-repeat: no-repeat;
 	background-position: center bottom;
 	background-size: 1000px auto;
 
-	@media (max-height: 1020px) {
-		background-size: 700px auto;
-	}
-
-	@media (max-width: 840px) {
+	/* DRY: одно правило вместо двух одинаковых */
+	@media (max-height: 1020px), (max-width: 840px) {
 		background-size: 700px auto;
 	}
 
 	@media (max-width: 500px) {
+		padding: 7.5rem 1rem;
 		background-size: 550px auto;
+		background-position: center 92%;
 	}
 
 	&__container {
@@ -128,10 +108,6 @@
 		background: rgba(255, 255, 255, 0.08);
 		justify-self: center;
 
-		@media (max-width: 1240px) {
-			height: 80%;
-		}
-
 		@media (max-width: 930px) {
 			width: 80%;
 			height: 1px;
@@ -139,8 +115,8 @@
 		}
 
 		@media (max-width: 500px) {
-			width: 80%;
-			margin: 1.5rem auto;
+			width: 90%;
+			margin: 1.25rem auto;
 		}
 	}
 
@@ -148,26 +124,31 @@
 		font-size: 3rem;
 		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 11px;
 		margin-bottom: 1.5rem;
-		text-align: justify;
+
+		/* фикс «дыр» между словами */
+		text-align: left;
+		letter-spacing: 0.08em;
+		word-spacing: normal;
+
 		text-shadow: 0 0 10px rgba(255, 60, 60, 0.3);
 
 		@media (max-width: 1240px) {
 			font-size: 2.6rem;
-			letter-spacing: 8px;
-			text-align: left;
+			letter-spacing: 0.06em;
 		}
 
 		@media (max-width: 930px) {
 			font-size: 2.2rem;
-			letter-spacing: 6px;
+			letter-spacing: 0.05em;
+			text-align: center;
 		}
 
 		@media (max-width: 500px) {
 			font-size: 1.8rem;
-			letter-spacing: 4px;
-			margin-bottom: 1.25rem;
+			letter-spacing: 0.04em;
+			margin-bottom: 1.1rem;
+			text-align: left;
 		}
 	}
 

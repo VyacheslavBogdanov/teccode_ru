@@ -7,33 +7,15 @@
 				<p class="contacts__org">Общество с ограниченной ответственностью «ТЕХНОКОД»</p>
 
 				<ul class="contacts__list">
-					<li class="contacts__item">
-						<span class="contacts__label">ИНН:</span>
-						<span class="contacts__value">6316286124</span>
-					</li>
-					<li class="contacts__item">
-						<span class="contacts__label">Телефон:</span>
-						<a href="tel:+79613819822" class="contacts__link">+7 961 381 9822</a>
-					</li>
-					<li class="contacts__item">
-						<span class="contacts__label">Адрес:</span>
-						<span class="contacts__value">
-							г. Самара, Московское шоссе, 4 стр. 9, офис 703
-						</span>
-					</li>
-					<li class="contacts__item">
-						<span class="contacts__label">Режим работы:</span>
-						<span class="contacts__value">Пн–Пт: 09:00 – 18:00</span>
-					</li>
-					<li class="contacts__item">
-						<span class="contacts__label">Для заказов:</span>
-						<a href="mailto:info@teccode.ru" class="contacts__link">info@teccode.ru</a>
-					</li>
-					<li class="contacts__item">
-						<span class="contacts__label">Служба поддержки:</span>
-						<a href="mailto:support@teccode.ru" class="contacts__link"
-							>support@teccode.ru</a
+					<li v-for="item in CONTACTS" :key="item.label" class="contacts__item">
+						<span class="contacts__label">{{ item.label }}</span>
+						<component
+							:is="item.href ? 'a' : 'span'"
+							:href="item.href || undefined"
+							:class="item.href ? 'contacts__link' : 'contacts__value'"
 						>
+							{{ item.value }}
+						</component>
 					</li>
 				</ul>
 			</div>
@@ -49,32 +31,43 @@
 	</section>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const CONTACTS = [
+	{
+		label: 'ИНН:',
+		value: '6316286124',
+		href: null,
+	},
+	{
+		label: 'Телефон:',
+		value: '+7 961 381 9822',
+		href: 'tel:+79613819822',
+	},
+	{
+		label: 'Адрес:',
+		value: 'г. Самара, Московское шоссе, 4 стр. 9, офис 703',
+		href: null,
+	},
+	{
+		label: 'Режим работы:',
+		value: 'Пн–Пт: 09:00 – 18:00',
+		href: null,
+	},
+	{
+		label: 'Для заказов:',
+		value: 'info@teccode.ru',
+		href: 'mailto:info@teccode.ru',
+	},
+	{
+		label: 'Служба поддержки:',
+		value: 'support@teccode.ru',
+		href: 'mailto:support@teccode.ru',
+	},
+] as const;
+</script>
 
 <style scoped lang="scss">
 @use '../../assets/styles/variables.scss' as *;
-
-@keyframes contactsFadeInLeft {
-	from {
-		opacity: 0;
-		transform: translateX(-30px);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-@keyframes contactsFadeInRight {
-	from {
-		opacity: 0;
-		transform: translateX(30px);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
 
 .contacts {
 	padding: 6rem 1rem;
@@ -97,7 +90,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
 		opacity: 0;
-		animation: contactsFadeInLeft 0.8s ease forwards;
+		animation: fadeInLeft 0.8s ease forwards;
 	}
 
 	&__title {
@@ -166,7 +159,7 @@
 		box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
 		overflow: hidden;
 		opacity: 0;
-		animation: contactsFadeInRight 0.8s ease forwards;
+		animation: fadeInRight 0.8s ease forwards;
 		animation-delay: 0.1s;
 	}
 

@@ -141,28 +141,7 @@ import { RouterLink } from 'vue-router';
 
 <style scoped lang="scss">
 @use '../../assets/styles/variables.scss' as *;
-
-@keyframes fadeInLeft {
-	0% {
-		opacity: 0;
-		transform: translateX(-30px);
-	}
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-@keyframes fadeInRight {
-	0% {
-		opacity: 0;
-		transform: translateX(30px);
-	}
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
+@use '../../assets/styles/mixins.scss' as m;
 
 .services {
 	padding: 6rem 1rem;
@@ -187,36 +166,7 @@ import { RouterLink } from 'vue-router';
 	}
 
 	&__order-btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.75rem 1.8rem;
-		border-radius: 999px;
-		border: 2px solid $main-red-color;
-		background: transparent;
-		color: $main-text-color;
-		font-size: 0.9rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		text-decoration: none;
-		cursor: pointer;
-		transition:
-			background 0.2s ease,
-			color 0.2s ease,
-			box-shadow 0.2s ease,
-			transform 0.1s ease;
-
-		&:hover {
-			background: $main-red-color;
-			color: #000;
-			box-shadow: 0 0 18px rgba($main-red-color, 0.6);
-		}
-
-		&:active {
-			transform: translateY(1px);
-			box-shadow: 0 0 10px rgba($main-red-color, 0.4);
-		}
+		@include m.ui-cta;
 	}
 
 	&__title {

@@ -1,13 +1,14 @@
 <template>
-	<section class="docs" v-if="documents.length">
+	<section class="docs" v-if="docs.length">
 		<div class="docs__container">
 			<RouterLink
-				v-for="doc in documents"
+				v-for="(doc, i) in docs"
 				:key="doc.id"
 				class="docs__item"
-				:to="{ name: 'ProductModuleDocument', params: { slug: moduleSlug, docId: doc.id } }"
+				:to="{ name: ROUTES.moduleDoc.name, params: { slug: moduleSlug, docId: doc.id } }"
+				:style="{ animationDelay: `${0.05 * i}s` }"
 			>
-				<span class="docs__icon" aria-hidden="true">PDF</span>
+				<span class="docs__icon" aria-hidden="true">{{ doc.badge ?? 'PDF' }}</span>
 				<span class="docs__title">{{ doc.title }}</span>
 			</RouterLink>
 		</div>
@@ -15,28 +16,24 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
-import type { DocItem } from '@/stores/main';
+import { ROUTES } from '@/router/routes';
+import { useMainStore } from '@/stores/main';
+import type { DocId } from '@/data/documents';
+import type { ModuleSlug } from '@/data/modules';
 
-defineProps<{
-	documents: DocItem[];
-	moduleSlug: string;
+const props = defineProps<{
+	moduleSlug: ModuleSlug;
+	docIds: DocId[];
 }>();
+
+const store = useMainStore();
+const docs = computed(() => store.documentsByIds(props.docIds));
 </script>
 
 <style scoped lang="scss">
 @use '../../assets/styles/variables.scss' as *;
-
-@keyframes docsFadeInUp {
-	from {
-		opacity: 0;
-		transform: translateY(12px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
 
 .docs {
 	margin-top: 3.5rem;
@@ -64,35 +61,8 @@ defineProps<{
 		text-decoration: none;
 		cursor: pointer;
 		opacity: 0;
-		animation: docsFadeInUp 0.6s ease forwards;
-		transition:
-			transform 0.15s ease-out,
-			color 0.15s ease-out;
-
-		&:nth-child(1) {
-			animation-delay: 0.05s;
-		}
-		&:nth-child(2) {
-			animation-delay: 0.1s;
-		}
-		&:nth-child(3) {
-			animation-delay: 0.15s;
-		}
-		&:nth-child(4) {
-			animation-delay: 0.2s;
-		}
-		&:nth-child(5) {
-			animation-delay: 0.25s;
-		}
-		&:nth-child(6) {
-			animation-delay: 0.3s;
-		}
-		&:nth-child(7) {
-			animation-delay: 0.35s;
-		}
-		&:nth-child(8) {
-			animation-delay: 0.4s;
-		}
+		animation: fadeInUp 0.6s ease forwards;
+		transition: transform 0.15s ease-out;
 
 		&:hover {
 			transform: translateY(-3px);
@@ -117,7 +87,6 @@ defineProps<{
 		width: 60px;
 		height: 80px;
 		flex: 0 0 60px;
-		box-sizing: border-box;
 		border-radius: 8px;
 		background: rgba(0, 0, 0, 0.4);
 		border: 2px solid rgba(255, 255, 255, 0.9);
@@ -168,6 +137,7 @@ defineProps<{
 		line-height: 1.7;
 		text-align: left;
 		color: rgba($main-text-color, 0.92);
+		transition: color 0.15s ease-out;
 	}
 }
 </style>

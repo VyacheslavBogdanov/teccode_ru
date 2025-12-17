@@ -17,17 +17,7 @@ import Form from '@/components/ContactFormPage/Form.vue';
 
 <style scoped lang="scss">
 @use '../assets/styles/variables.scss' as *;
-
-@keyframes contactFadeInUp {
-	from {
-		opacity: 0;
-		transform: translateY(30px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
+@use '../assets/styles/mixins.scss' as m;
 
 .contact {
 	padding: 6rem 1rem;
@@ -37,10 +27,10 @@ import Form from '@/components/ContactFormPage/Form.vue';
 		max-width: 720px;
 		margin: 0 auto;
 		padding: 3rem 2.5rem;
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
+		@include m.ui-panel;
+		background: transparent;
 		opacity: 0;
-		animation: contactFadeInUp 0.8s ease forwards;
+		animation: fadeInUp 0.8s ease forwards;
 	}
 
 	&__title {

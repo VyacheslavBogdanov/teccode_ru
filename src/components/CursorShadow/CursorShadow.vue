@@ -12,6 +12,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
+const EASING = 0.12;
+const INITIAL_SIZE = 7;
+
 const x = ref(0);
 const y = ref(0);
 const targetX = ref(0);
@@ -27,9 +30,8 @@ const handleMouseMove = (event: MouseEvent) => {
 };
 
 const animate = () => {
-	const ease = 0.12;
-	x.value += (targetX.value - x.value) * ease;
-	y.value += (targetY.value - y.value) * ease;
+	x.value += (targetX.value - x.value) * EASING;
+	y.value += (targetY.value - y.value) * EASING;
 	rafId = window.requestAnimationFrame(animate);
 };
 

@@ -49,21 +49,30 @@
 import { ref } from 'vue';
 import SubmitButton from './SubmitButton.vue';
 
+const SUCCESS_MESSAGE_TIMEOUT = 4000;
+
 const name = ref('');
 const email = ref('');
 const message = ref('');
 const submitted = ref(false);
 
-const onSubmit = () => {
-	submitted.value = true;
-
+const resetFields = () => {
 	name.value = '';
 	email.value = '';
 	message.value = '';
+};
 
+const scheduleHideSuccess = () => {
 	setTimeout(() => {
 		submitted.value = false;
-	}, 4000);
+	}, SUCCESS_MESSAGE_TIMEOUT);
+};
+
+const onSubmit = () => {
+	submitted.value = true;
+
+	resetFields();
+	scheduleHideSuccess();
 };
 </script>
 

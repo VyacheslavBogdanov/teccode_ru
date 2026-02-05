@@ -20,7 +20,7 @@ import { RouterLink } from 'vue-router';
 import { ROUTES } from '@/router/routes';
 import type { ModuleDocumentLink } from '@/api/software';
 
-const props = defineProps<{
+defineProps<{
 	moduleSlug: string;
 	docs: ModuleDocumentLink[];
 }>();

@@ -102,7 +102,6 @@ export const MODULES_BY_SLUG = Object.fromEntries(MODULES.map((m) => [m.slug, m]
 	ModuleItem
 >;
 
-// По умолчанию — полный набор документов для модулей (можешь сужать per-module)
 export const DEFAULT_MODULE_DOC_IDS: DocId[] = [
 	'source-storage',
 	'install',

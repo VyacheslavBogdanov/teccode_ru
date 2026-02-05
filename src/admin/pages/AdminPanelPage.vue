@@ -35,8 +35,12 @@
 									accept="image/*"
 									@change="onCreatePreviewFile"
 								/>
-								<label class="admin__file-btn" for="createPreviewFile">Выбрать файл</label>
-								<span class="admin__file-name">{{ createPreviewFileName || 'Файл не выбран' }}</span>
+								<label class="admin__file-btn" for="createPreviewFile"
+									>Выбрать файл</label
+								>
+								<span class="admin__file-name">{{
+									createPreviewFileName || 'Файл не выбран'
+								}}</span>
 							</div>
 							<span class="admin__hint">PNG/JPG/WebP, до 3 МБ</span>
 							<div v-if="createPreview" class="admin__preview">
@@ -50,7 +54,11 @@
 						</label>
 						<label class="admin__label">
 							<span>Описание</span>
-							<textarea class="admin__textarea" v-model="createDescription" rows="4" />
+							<textarea
+								class="admin__textarea"
+								v-model="createDescription"
+								rows="4"
+							/>
 						</label>
 						<button class="ui-cta" type="submit" :disabled="creating">
 							{{ creating ? 'Создаём…' : 'Создать' }}
@@ -81,7 +89,11 @@
 								>
 									Редактировать
 								</RouterLink>
-								<button class="admin__btn admin__btn--danger" type="button" @click="onDelete(m.id)">
+								<button
+									class="admin__btn admin__btn--danger"
+									type="button"
+									@click="onDelete(m.id)"
+								>
 									Удалить
 								</button>
 							</div>
@@ -103,6 +115,14 @@ import type { ModuleListItem } from '@/api/software';
 
 const router = useRouter();
 const store = useAdminStore();
+
+function toErrorMessage(err: unknown, fallback: string) {
+	if (err instanceof Error) return err.message || fallback;
+	if (err && typeof err === 'object' && 'message' in err) {
+		return String((err as { message?: unknown }).message ?? fallback);
+	}
+	return fallback;
+}
 
 const publicSiteHref = router.resolve(ROUTES.softwareSolutions.path).href;
 
@@ -190,8 +210,8 @@ async function onCreate() {
 		createPreviewFileName.value = '';
 		if (createPreviewInput.value) createPreviewInput.value.value = '';
 		await load();
-	} catch (e: any) {
-		createError.value = e?.message ?? 'Ошибка';
+	} catch (e: unknown) {
+		createError.value = toErrorMessage(e, 'Ошибка');
 	} finally {
 		creating.value = false;
 	}
@@ -359,7 +379,6 @@ onMounted(load);
 			color: rgba(17, 24, 39, 0.45);
 		}
 	}
-
 
 	&__hint {
 		font-size: 0.8rem;

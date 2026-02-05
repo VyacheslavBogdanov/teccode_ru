@@ -32,6 +32,8 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({ name: 'ContactsPageContacts' });
+
 const CONTACTS = [
 	{
 		label: 'ИНН:',

@@ -41,11 +41,7 @@ export const adminApi = {
 			payload,
 			token,
 		),
-	updateDocument: (
-		id: string,
-		payload: { title?: string; content?: string },
-		token: string,
-	) =>
+	updateDocument: (id: string, payload: { title?: string; content?: string }, token: string) =>
 		http.put<{ document: DocumentItem }>(
 			`/api/admin/documents/${encodeURIComponent(id)}`,
 			payload,

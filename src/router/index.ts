@@ -4,7 +4,11 @@ import { ROUTES } from './routes';
 import { isAdminAuthed } from '@/admin/auth';
 
 const routes: RouteRecordRaw[] = [
-	{ path: ROUTES.home.path, name: ROUTES.home.name, component: () => import('@/pages/HomePage.vue') },
+	{
+		path: ROUTES.home.path,
+		name: ROUTES.home.name,
+		component: () => import('@/pages/HomePage.vue'),
+	},
 	{
 		path: ROUTES.directions.path,
 		name: ROUTES.directions.name,
@@ -15,13 +19,21 @@ const routes: RouteRecordRaw[] = [
 		name: ROUTES.softwareSolutions.name,
 		component: () => import('@/pages/SoftwareSolutionsPage.vue'),
 	},
-	{ path: ROUTES.contacts.path, name: ROUTES.contacts.name, component: () => import('@/pages/ContactsPage.vue') },
+	{
+		path: ROUTES.contacts.path,
+		name: ROUTES.contacts.name,
+		component: () => import('@/pages/ContactsPage.vue'),
+	},
 	{
 		path: ROUTES.contactForm.path,
 		name: ROUTES.contactForm.name,
 		component: () => import('@/pages/ContactFormPage.vue'),
 	},
-	{ path: ROUTES.module.path, name: ROUTES.module.name, component: () => import('@/pages/ProductModulePage.vue') },
+	{
+		path: ROUTES.module.path,
+		name: ROUTES.module.name,
+		component: () => import('@/pages/ProductModulePage.vue'),
+	},
 	{
 		path: ROUTES.moduleDoc.path,
 		name: ROUTES.moduleDoc.name,

@@ -29,7 +29,27 @@ function getBaseUrl() {
 	return v.endsWith('/') ? v.slice(0, -1) : v;
 }
 
-async function request<T>(method: HttpMethod, url: string, body?: unknown, token?: string): Promise<T> {
+function extractError(payload: unknown): string {
+	if (!payload || typeof payload !== 'object') return '';
+	if (!('error' in payload)) return '';
+	return String((payload as { error?: unknown }).error ?? '');
+}
+
+function isAbortError(err: unknown): boolean {
+	return (
+		!!err &&
+		typeof err === 'object' &&
+		'name' in err &&
+		String((err as { name?: unknown }).name ?? '') === 'AbortError'
+	);
+}
+
+async function request<T>(
+	method: HttpMethod,
+	url: string,
+	body?: unknown,
+	token?: string,
+): Promise<T> {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
@@ -45,19 +65,19 @@ async function request<T>(method: HttpMethod, url: string, body?: unknown, token
 		});
 
 		if (!res.ok) {
-			let payload: any = null;
+			let payload: unknown = null;
 			try {
 				payload = await res.json();
 			} catch {
 				payload = null;
 			}
-			const msg = humanizeError(payload?.error ?? `HTTP ${res.status}`);
+			const msg = humanizeError(extractError(payload) || `HTTP ${res.status}`);
 			throw new Error(msg);
 		}
 
 		return (await res.json()) as T;
-	} catch (e: any) {
-		if (e?.name === 'AbortError') {
+	} catch (e: unknown) {
+		if (isAbortError(e)) {
 			throw new Error('Превышено время ожидания ответа');
 		}
 		throw e instanceof Error ? e : new Error(humanizeError(e));

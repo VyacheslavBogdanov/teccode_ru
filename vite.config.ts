@@ -4,7 +4,8 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
-	const raw = String(env.VITE_API_BASE_URL ?? 'http://localhost:3001').trim();
+	const backendPort = Number(env.PORT ?? process.env.PORT ?? 3001);
+	const raw = String(env.VITE_API_BASE_URL ?? `http://localhost:${backendPort}`).trim();
 	const base = raw.replace(/\/+$/, '');
 	const target = base.endsWith('/api') ? base.slice(0, -4) : base;
 

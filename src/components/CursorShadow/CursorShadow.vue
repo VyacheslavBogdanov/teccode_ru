@@ -13,7 +13,6 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 const EASING = 0.12;
-const INITIAL_SIZE = 7;
 
 const x = ref(0);
 const y = ref(0);

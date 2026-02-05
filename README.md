@@ -1,39 +1,54 @@
-# component-library-vite
+## Запуск в dev (Windows)
 
-This template should help get you started developing with Vue 3 in Vite.
+### Что нужно
 
-## Recommended IDE Setup
+- Node.js (рекомендуется LTS)
+- Docker Desktop (для PostgreSQL)
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+### Быстрый старт
 
-## Type Support for `.vue` Imports in TS
+В папке `teccode_ru/`:
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
+```bash
 npm install
+docker compose up -d db
+npx prisma migrate dev
+npm run dev:full
 ```
 
-### Compile and Hot-Reload for Development
+- Фронт: Vite поднимется на `http://localhost:5173/` (если порт занят — выберет следующий).
+- API: сервер по умолчанию на `http://localhost:3001/`.
 
-```sh
-npm run dev
+### Частые проблемы
+
+#### Порт 3001 занят
+
+Обычно это значит, что у вас уже запущен старый `node`‑процесс или контейнер `teccode_app` (production compose).
+
+- Остановить production контейнеры:
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod down --remove-orphans
 ```
 
-### Type-Check, Compile and Minify for Production
+- Или просто сменить порт для dev‑сервера: в `.env` поставьте, например, `PORT=3002`.
 
-```sh
-npm run build
+#### База недоступна (`Can't reach database server at localhost:5432`)
+
+- Проверьте, что Docker Desktop запущен.
+- Поднимите базу:
+
+```bash
+docker compose up -d db
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+#### Prisma падает с EPERM на Windows (query_engine*.dll.node)
 
-```sh
-npm run lint
+Это почти всегда блокировка файла (антивирус/Defender или запущенный `node`, который держит Prisma engine).
+
+- Остановите все dev‑процессы (`npm run dev:full`, `dev:server`), закройте лишние `node.exe`.
+- Повторите:
+
+```bash
+npx prisma migrate dev
 ```

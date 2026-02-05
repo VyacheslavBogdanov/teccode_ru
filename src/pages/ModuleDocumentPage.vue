@@ -17,10 +17,17 @@
 			</p>
 
 			<h1 class="doc-page__title">{{ doc.title }}</h1>
-			<p class="doc-page__meta">Документ: {{ doc.id }} • Модуль: {{ slug }}</p>
 
-			<div class="doc-page__placeholder ui-panel">
-				Здесь будет контент документа (изображения/страницы) для каждого модуля отдельно.
+			<div class="doc-page__content ui-panel">
+				<div class="doc-page__blocks">
+					<template v-for="(b, idx) in blocks" :key="idx">
+						<p v-if="b.type === 'p'" class="doc-page__p">{{ b.text }}</p>
+						<div v-else-if="b.type === 'img'" class="doc-page__img-wrap">
+							<img class="doc-page__img" :src="b.src" :alt="b.alt" loading="lazy" />
+						</div>
+						<div v-else class="doc-page__space" />
+					</template>
+				</div>
 			</div>
 
 			<RouterLink :to="{ name: ROUTES.module.name, params: { slug } }" class="doc-page__back">
@@ -40,28 +47,112 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import { ROUTES } from '@/router/routes';
-import { MODULES_BY_SLUG } from '@/data/modules';
-import type { ModuleSlug } from '@/data/modules';
-import type { DocId } from '@/data/documents';
-import { useMainStore } from '@/stores/main';
+import { softwareApi, type DocumentItem, type ModuleDetail } from '@/api/software';
 
 const route = useRoute();
-const store = useMainStore();
 
-const slug = computed(() => route.params.slug as ModuleSlug);
-const docId = computed(() => route.params.docId as DocId);
+const slug = computed(() => String(route.params.slug ?? ''));
+const docId = computed(() => String(route.params.docId ?? ''));
 
-const moduleItem = computed(() => MODULES_BY_SLUG[slug.value]);
-const doc = computed(() => {
+const moduleItem = ref<ModuleDetail | null>(null);
+const doc = ref<DocumentItem | null>(null);
+
+function resolveUploadSrc(src: string) {
+	const raw = String(import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/$/, '');
+	const baseCandidate = raw ? (raw.endsWith('/api') ? raw.slice(0, -4) : raw) : window.location.origin;
+	let base = baseCandidate;
 	try {
-		return store.documentById(docId.value);
+		const b = new URL(baseCandidate);
+		const currentHost = String(window.location.hostname ?? '').toLowerCase();
+		const isCurrentLocal =
+			currentHost === 'localhost' || currentHost === '127.0.0.1' || currentHost === '::1';
+		const envHost = String(b.hostname ?? '').toLowerCase();
+		const isEnvLocal = envHost === 'localhost' || envHost === '127.0.0.1' || envHost === '::1';
+		if (isEnvLocal && !isCurrentLocal) base = window.location.origin;
+		else base = b.origin;
 	} catch {
-		return null;
 	}
-});
+	if (src.startsWith('/uploads/')) return `${base}${src}`;
+	if (src.startsWith('http://') || src.startsWith('https://')) {
+		try {
+			const u = new URL(src);
+			if (u.pathname.startsWith('/uploads/')) return `${base}${u.pathname}`;
+		} catch {
+		}
+	}
+	return src;
+}
+
+function parseBlocks(raw: string) {
+	const text = String(raw ?? '').replace(/\r\n/g, '\n');
+	const lines = text.split('\n');
+	const blocks: Array<
+		| { type: 'p'; text: string }
+		| { type: 'img'; src: string; alt: string }
+		| { type: 'space' }
+	> = [];
+
+	for (const line of lines) {
+		const trimmed = line.trim();
+		if (!trimmed) {
+			blocks.push({ type: 'space' });
+			continue;
+		}
+
+		const imgRe = /!\[([^\]]*)\]\(([^)]+)\)/g;
+		let lastIdx = 0;
+		let any = false;
+		for (const m of trimmed.matchAll(imgRe)) {
+			any = true;
+			const idx = Number(m.index ?? 0);
+			const beforeText = trimmed.slice(lastIdx, idx).trim();
+			if (beforeText) blocks.push({ type: 'p', text: beforeText });
+
+			const alt = String(m[1] ?? '').trim();
+			const src = String(m[2] ?? '').trim();
+			const ok =
+				src.startsWith('/uploads/') || src.startsWith('http://') || src.startsWith('https://');
+			if (ok) blocks.push({ type: 'img', src: resolveUploadSrc(src), alt });
+			else blocks.push({ type: 'p', text: m[0] });
+
+			lastIdx = idx + String(m[0] ?? '').length;
+		}
+
+		if (any) {
+			const tail = trimmed.slice(lastIdx).trim();
+			if (tail) blocks.push({ type: 'p', text: tail });
+			continue;
+		}
+
+		blocks.push({ type: 'p', text: line });
+	}
+
+	return blocks;
+}
+
+const blocks = computed(() => parseBlocks(String(doc.value?.content ?? '')));
+
+async function load() {
+	moduleItem.value = null;
+	doc.value = null;
+	try {
+		const [{ module }, { document }] = await Promise.all([
+			softwareApi.getModule(slug.value),
+			softwareApi.getDocument(docId.value),
+		]);
+		moduleItem.value = module;
+		doc.value = document;
+	} catch {
+		moduleItem.value = null;
+		doc.value = null;
+	}
+}
+
+onMounted(load);
+watch([slug, docId], load);
 </script>
 
 <style scoped lang="scss">
@@ -110,16 +201,44 @@ const doc = computed(() => {
 		margin-bottom: 0.75rem;
 	}
 
-	&__meta {
-		font-size: 0.9rem;
-		color: rgba($main-text-color, 0.7);
-		margin-bottom: 2rem;
-	}
 
-	&__placeholder {
+	&__content {
 		padding: 2rem;
 		border-radius: 12px;
 		margin-bottom: 1.5rem;
+	}
+
+	&__blocks {
+		display: grid;
+		gap: 1rem;
+	}
+
+	&__p {
+		margin: 0;
+		white-space: pre-wrap;
+		word-break: break-word;
+		font-family: inherit;
+		font-size: 0.95rem;
+		line-height: 1.7;
+		color: rgba($main-text-color, 0.92);
+	}
+
+	&__img-wrap {
+		width: 100%;
+		display: grid;
+		place-items: start;
+	}
+
+	&__img {
+		max-width: 100%;
+		height: auto;
+		display: block;
+		border-radius: 12px;
+		border: 1px solid rgba($main-text-color, 0.1);
+	}
+
+	&__space {
+		height: 0.5rem;
 	}
 
 	&__back {

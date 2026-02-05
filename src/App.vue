@@ -2,13 +2,13 @@
 	<div id="app">
 		<Header />
 		<router-view />
-		<!-- <Footer /> -->
+		<CursorShadow />
 	</div>
 </template>
 
 <script setup lang="ts">
-import Header from './components/Header.vue';
-import Footer from './components/Footer.vue';
+import Header from './components/Header/Header.vue';
+import CursorShadow from './components/CursorShadow/CursorShadow.vue';
 </script>
 
 <style scoped lang="scss">

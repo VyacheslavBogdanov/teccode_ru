@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { readDb, writeDb } from './db.js';
+import { prisma } from './prisma.js';
 
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
@@ -7,45 +7,42 @@ function now() {
 	return Date.now();
 }
 
-async function cleanupExpiredSessions(db) {
-	const t = now();
-	const before = db.sessions?.length ?? 0;
-	db.sessions = (db.sessions ?? []).filter((s) => (s.expiresAt ?? 0) > t);
-	if ((db.sessions?.length ?? 0) !== before) {
-		await writeDb(db);
-	}
+async function cleanupExpiredSessions() {
+	const t = new Date();
+	await prisma.session.deleteMany({
+		where: { expiresAt: { lt: t } },
+	});
 }
 
 export async function createSession() {
-	const db = await readDb();
-	await cleanupExpiredSessions(db);
+	await cleanupExpiredSessions();
 
 	const token = uuidv4();
 	const createdAt = now();
 	const expiresAt = createdAt + SESSION_TTL_MS;
 
-	db.sessions = db.sessions ?? [];
-	db.sessions.push({ token, createdAt, expiresAt });
-	await writeDb(db);
+	await prisma.session.create({
+		data: {
+			token,
+			createdAt: new Date(createdAt),
+			expiresAt: new Date(expiresAt),
+		},
+	});
 
 	return { token, expiresAt };
 }
 
 export async function deleteSession(token) {
-	const db = await readDb();
-	await cleanupExpiredSessions(db);
-	const before = db.sessions?.length ?? 0;
-	db.sessions = (db.sessions ?? []).filter((s) => s.token !== token);
-	if ((db.sessions?.length ?? 0) !== before) {
-		await writeDb(db);
-	}
+	await cleanupExpiredSessions();
+	await prisma.session.deleteMany({ where: { token } });
 }
 
 export async function isTokenValid(token) {
 	if (!token) return false;
-	const db = await readDb();
-	await cleanupExpiredSessions(db);
-	return (db.sessions ?? []).some((s) => s.token === token);
+	await cleanupExpiredSessions();
+	const session = await prisma.session.findUnique({ where: { token } });
+	if (!session) return false;
+	return session.expiresAt.getTime() > now();
 }
 
 export function getAdminCredentials() {
@@ -75,7 +72,7 @@ export function requireAuth() {
 			const ok = await isTokenValid(token);
 			if (!ok) return res.status(401).json({ error: 'unauthorized' });
 			next();
-		} catch (e) {
+		} catch {
 			res.status(500).json({ error: 'auth_failed' });
 		}
 	};

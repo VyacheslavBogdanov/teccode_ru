@@ -1,6 +1,6 @@
 # Backend (Express) — TechCode RU
 
-Это простой бэкенд на **Express** с хранением данных в JSON-файле.
+Это бэкенд на **Express** с хранением данных в **PostgreSQL** (через Prisma).
 
 ## Быстрый старт
 
@@ -16,7 +16,19 @@ npm install
 cp .env.example .env
 ```
 
-3) Запустить бэкенд
+3) Поднять Postgres (Docker)
+
+```bash
+docker compose up -d db
+```
+
+4) Применить миграции
+
+```bash
+npx prisma migrate dev
+```
+
+5) Запустить бэкенд
 
 ```bash
 npm run dev:server
@@ -52,6 +64,16 @@ npm run dev:server
 
 ## Хранение данных
 
-Файл: `server/data/db.json`
+Postgres + Prisma.
 
-При первом запуске, если файла нет — он создаётся и сидируется дефолтными модулями.
+
+
+```bash
+docker compose up -d db
+```
+
+### Миграции
+
+```bash
+npx prisma migrate dev
+```

@@ -35,7 +35,6 @@ button {
 	font-family: inherit;
 }
 
-// DRY UI classes (общие “кирпичики”)
 .ui-panel {
 	@include m.ui-panel;
 }

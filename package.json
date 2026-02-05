@@ -5,6 +5,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
+		"server": "node --env-file=.env server/index.js",
+		"dev:server": "nodemon --watch server --ext js,json --exec \"node --env-file=.env server/index.js\"",
+		"dev:full": "run-p dev dev:server",
 		"build": "run-p type-check \"build-only {@}\" --",
 		"preview": "vite preview",
 		"build-only": "vite build",

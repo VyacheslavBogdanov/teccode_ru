@@ -6,4 +6,8 @@ export const ROUTES = {
 	contactForm: { name: 'ContactForm', path: '/contact-form' },
 	module: { name: 'Module', path: '/products/:slug' },
 	moduleDoc: { name: 'ModuleDoc', path: '/products/:slug/docs/:docId' },
+
+	adminLogin: { name: 'AdminLogin', path: '/admin/login' },
+	admin: { name: 'Admin', path: '/admin' },
+	adminModule: { name: 'AdminModule', path: '/admin/modules/:id' },
 } as const;

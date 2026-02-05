@@ -105,8 +105,6 @@
 						Коммерческое предложение предоставляется индивидуально.
 					</p>
 				</article>
-
-				<!-- Блок 4: Аутстаффинг разработчиков -->
 				<article class="services__card">
 					<h3 class="services__card-title">Аутстаффинг разработчиков</h3>
 					<p class="services__card-intro">

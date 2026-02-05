@@ -11,16 +11,13 @@
 
 			<h1 class="module__title">{{ moduleItem.title }}</h1>
 
-			<p class="module__subtitle">
-				Здесь будет подробное описание данного программного модуля, его функциональности,
-				интеграций и вариантов внедрения.
-			</p>
+			<p class="module__subtitle">{{ moduleItem.description }}</p>
 
 			<RouterLink :to="ROUTES.contactForm.path" class="module__cta ui-cta"
 				>Запросить цену</RouterLink
 			>
 
-			<ModuleDocuments :module-slug="moduleItem.slug" :doc-ids="docIds" />
+			<ModuleDocuments :module-slug="moduleItem.slug" :docs="moduleItem.documents" />
 		</div>
 	</section>
 
@@ -35,21 +32,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import { ROUTES } from '@/router/routes';
-import { MODULES_BY_SLUG } from '@/data/modules';
-import type { ModuleSlug } from '@/data/modules';
-import { useMainStore } from '@/stores/main';
 import ModuleDocuments from '@/components/ProductModulePage/ModuleDocuments.vue';
+import { softwareApi, type ModuleDetail } from '@/api/software';
 
 const route = useRoute();
-const store = useMainStore();
+const slug = computed(() => String(route.params.slug ?? ''));
 
-const slug = computed(() => route.params.slug as ModuleSlug);
+const moduleItem = ref<ModuleDetail | null>(null);
 
-const moduleItem = computed(() => MODULES_BY_SLUG[slug.value]);
-const docIds = computed(() => store.docIdsForModule(slug.value));
+async function load() {
+	moduleItem.value = null;
+	try {
+		const { module } = await softwareApi.getModule(slug.value);
+		moduleItem.value = module;
+	} catch {
+		moduleItem.value = null;
+	}
+}
+
+onMounted(load);
+watch(slug, load);
 </script>
 
 <style scoped lang="scss">

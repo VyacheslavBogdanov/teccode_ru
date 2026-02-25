@@ -47,6 +47,8 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
 import { ROUTES } from '@/router/routes';
+
+defineOptions({ name: 'AppHeader' });
 </script>
 
 <style scoped lang="scss">

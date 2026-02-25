@@ -5,8 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { DB_FILE, ensureDbFile, readDb, writeDb } from './lib/db.js';
-import { buildDefaultDb } from './seed/defaultData.js';
+import { prisma } from './lib/prisma.js';
 import {
 	getAdminCredentials,
 	createSession,
@@ -18,32 +17,93 @@ import { slugify } from './lib/slugify.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadsDir = path.join(__dirname, 'uploads');
+const distDir = path.resolve(__dirname, '..', 'dist');
 
 await fs.mkdir(uploadsDir, { recursive: true });
-await ensureDbFile(async () => buildDefaultDb());
 
 const app = express();
 
 const port = Number(process.env.PORT ?? 3001);
 
+function isProd() {
+	return String(process.env.NODE_ENV ?? '').trim() === 'production';
+}
+
+function validateEnv() {
+	if (isProd()) {
+		getAdminCredentials();
+
+		const dbUrl = String(process.env.DATABASE_URL ?? '').trim();
+		if (!dbUrl) {
+			throw new Error('DATABASE_URL must be set in production');
+		}
+	}
+}
+
+validateEnv();
+
 app.disable('x-powered-by');
 app.use(express.json({ limit: '15mb' }));
 
+if (String(process.env.TRUST_PROXY ?? '').trim() === '1') {
+	app.set('trust proxy', 1);
+}
+
+function setSecurityHeaders(_req, res, next) {
+	res.setHeader('X-Content-Type-Options', 'nosniff');
+	res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+	res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+	res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+	if (String(process.env.HSTS ?? '').trim() === '1') {
+		res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
+	}
+
+	next();
+}
+
+app.use(setSecurityHeaders);
+
 const corsOriginRaw = String(process.env.CORS_ORIGIN ?? '').trim();
-const allowAllOrigins = !corsOriginRaw || corsOriginRaw === '*';
-const allowList = allowAllOrigins
-	? undefined
+const corsAllowAll = corsOriginRaw === '*';
+const corsAllowList = corsAllowAll
+	? null
 	: corsOriginRaw.split(',').map((s) => s.trim()).filter(Boolean);
 
-const corsOptions = {
-	origin: allowList ?? true,
-	credentials: false,
-};
+if (corsOriginRaw) {
+	if (isProd() && corsAllowAll) {
+		console.warn('[server] WARNING: CORS_ORIGIN="*" in production. Consider using an explicit allowlist.');
+	}
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+	const corsOptions = {
+		origin(origin, cb) {
+			if (!origin) return cb(null, true);
+			if (corsAllowAll) return cb(null, true);
+			if (corsAllowList?.includes(origin)) return cb(null, true);
+			return cb(new Error('cors_not_allowed'));
+		},
+		credentials: false,
+	};
+
+	app.use(cors(corsOptions));
+	app.options('*', cors(corsOptions));
+}
+
+function asyncHandler(fn) {
+	return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+}
 
 app.use('/uploads', express.static(uploadsDir));
+
+try {
+	await fs.access(distDir);
+	app.use(express.static(distDir));
+	app.get(/^\/(?!api\/|uploads\/).*/, async (_req, res) => {
+		res.sendFile(path.join(distDir, 'index.html'));
+	});
+} catch {
+
+}
 
 const loginAttempts = new Map();
 
@@ -67,31 +127,6 @@ function rateLimitLogin(req, res, next) {
 	return next();
 }
 
-function expandDocuments(module, db) {
-	return (module.documents ?? [])
-		.map((id) => (db.documents ?? []).find((d) => d.id === id))
-		.filter(Boolean)
-		.map((d) => ({ id: d.id, title: d.title, updatedAt: d.updatedAt }));
-}
-
-function toPublicModule(module, db) {
-	return {
-		id: module.id,
-		slug: module.slug,
-		title: module.title,
-		preview: module.preview,
-		description: module.description,
-		documents: expandDocuments(module, db),
-	};
-}
-
-function toAdminModule(module, db) {
-	return {
-		...toPublicModule(module, db),
-		updatedAt: module.updatedAt,
-	};
-}
-
 function parseImageDataUrl(dataUrl) {
 	const raw = String(dataUrl ?? '').trim();
 	const m = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(raw);
@@ -105,203 +140,6 @@ const mimeExt = {
 	'image/webp': 'webp',
 	'image/gif': 'gif',
 };
-
-app.get('/api/health', (_req, res) =>
-	res.json({
-		ok: true,
-		port,
-		uploads: true,
-		dbFile: DB_FILE,
-		cwd: process.cwd(),
-		pid: process.pid,
-		version: 'fix3_patch2',
-	}),
-);
-
-app.get('/api/modules', async (_req, res) => {
-	const db = await readDb();
-	const modules = (db.modules ?? []).map(({ id, slug, title, preview }) => ({
-		id,
-		slug,
-		title,
-		preview,
-	}));
-	res.json({ modules });
-});
-
-app.get('/api/modules/:slug', async (req, res) => {
-	const db = await readDb();
-	const module = (db.modules ?? []).find((m) => m.slug === req.params.slug);
-	if (!module) return res.status(404).json({ error: 'not_found' });
-	res.json({ module: toPublicModule(module, db) });
-});
-
-app.get('/api/documents/:id', async (req, res) => {
-	const db = await readDb();
-	const doc = (db.documents ?? []).find((d) => d.id === req.params.id);
-	if (!doc) return res.status(404).json({ error: 'not_found' });
-	res.json({ document: doc });
-});
-
-app.post('/api/auth/login', rateLimitLogin, async (req, res) => {
-	const { login, password } = req.body ?? {};
-	const creds = getAdminCredentials();
-	if (login !== creds.login || password !== creds.password) {
-		return res.status(401).json({ error: 'invalid_credentials' });
-	}
-	const { token, expiresAt } = await createSession();
-	res.json({ token, expiresAt });
-});
-
-app.post('/api/auth/logout', async (req, res) => {
-	const token = extractBearerToken(req);
-	if (token) await deleteSession(token);
-	res.json({ ok: true });
-});
-
-app.get('/api/admin/modules', requireAuth(), async (_req, res) => {
-	const db = await readDb();
-	const modules = (db.modules ?? []).map(({ id, slug, title, preview, updatedAt }) => ({
-		id,
-		slug,
-		title,
-		preview,
-		updatedAt,
-	}));
-	res.json({ modules });
-});
-
-app.get('/api/admin/modules/:id', requireAuth(), async (req, res) => {
-	const db = await readDb();
-	const module = (db.modules ?? []).find((m) => m.id === req.params.id);
-	if (!module) return res.status(404).json({ error: 'not_found' });
-	res.json({ module: toAdminModule(module, db) });
-});
-
-app.post('/api/admin/modules', requireAuth(), async (req, res) => {
-	const { title, preview, description, slug } = req.body ?? {};
-	if (!title || String(title).trim().length < 2) {
-		return res.status(400).json({ error: 'title_required' });
-	}
-
-	const db = await readDb();
-	const baseSlug = String(slug ?? slugify(title) ?? '').trim() || uuidv4().slice(0, 8);
-	let finalSlug = baseSlug;
-	let i = 2;
-	while ((db.modules ?? []).some((m) => m.slug === finalSlug)) {
-		finalSlug = `${baseSlug}-${i++}`;
-	}
-
-	const moduleId = uuidv4();
-	const nowIso = new Date().toISOString();
-	const module = {
-		id: moduleId,
-		slug: finalSlug,
-		title: String(title).trim(),
-		preview: String(preview ?? '🧩'),
-		description: String(description ?? ''),
-		documents: [],
-		createdAt: nowIso,
-		updatedAt: nowIso,
-	};
-
-	db.modules = db.modules ?? [];
-	db.modules.push(module);
-	await writeDb(db);
-
-	res.status(201).json({ module: toAdminModule(module, db) });
-});
-
-app.put('/api/admin/modules/:id', requireAuth(), async (req, res) => {
-	const { id } = req.params;
-	const { title, preview, description } = req.body ?? {};
-	const db = await readDb();
-	const module = (db.modules ?? []).find((m) => m.id === id);
-	if (!module) return res.status(404).json({ error: 'not_found' });
-
-	if (title != null) module.title = String(title).trim();
-	if (preview != null) module.preview = String(preview);
-	if (description != null) module.description = String(description);
-	module.updatedAt = new Date().toISOString();
-
-	await writeDb(db);
-	res.json({ module: toAdminModule(module, db) });
-});
-
-app.delete('/api/admin/modules/:id', requireAuth(), async (req, res) => {
-	const { id } = req.params;
-	const db = await readDb();
-	const module = (db.modules ?? []).find((m) => m.id === id);
-	if (!module) return res.status(404).json({ error: 'not_found' });
-
-	const docSet = new Set(module.documents ?? []);
-	db.documents = (db.documents ?? []).filter((d) => !docSet.has(d.id));
-	db.modules = (db.modules ?? []).filter((m) => m.id !== id);
-
-	await writeDb(db);
-	res.json({ ok: true });
-});
-
-app.post('/api/admin/modules/:moduleId/documents', requireAuth(), async (req, res) => {
-	const { moduleId } = req.params;
-	const { title, content } = req.body ?? {};
-	if (!title || String(title).trim().length < 2) {
-		return res.status(400).json({ error: 'title_required' });
-	}
-
-	const db = await readDb();
-	const module = (db.modules ?? []).find((m) => m.id === moduleId);
-	if (!module) return res.status(404).json({ error: 'module_not_found' });
-
-	const doc = {
-		id: uuidv4(),
-		moduleId,
-		title: String(title).trim(),
-		content: String(content ?? ''),
-		updatedAt: new Date().toISOString(),
-	};
-
-	db.documents = db.documents ?? [];
-	db.documents.push(doc);
-	module.documents = module.documents ?? [];
-	module.documents.push(doc.id);
-	module.updatedAt = new Date().toISOString();
-
-	await writeDb(db);
-	res.status(201).json({ document: doc });
-});
-
-app.put('/api/admin/documents/:id', requireAuth(), async (req, res) => {
-	const { id } = req.params;
-	const { title, content } = req.body ?? {};
-	const db = await readDb();
-	const doc = (db.documents ?? []).find((d) => d.id === id);
-	if (!doc) return res.status(404).json({ error: 'not_found' });
-
-	if (title != null) doc.title = String(title).trim();
-	if (content != null) doc.content = String(content);
-	doc.updatedAt = new Date().toISOString();
-
-	await writeDb(db);
-	res.json({ document: doc });
-});
-
-app.delete('/api/admin/documents/:id', requireAuth(), async (req, res) => {
-	const { id } = req.params;
-	const db = await readDb();
-	const doc = (db.documents ?? []).find((d) => d.id === req.params.id);
-	if (!doc) return res.status(404).json({ error: 'not_found' });
-
-	const module = (db.modules ?? []).find((m) => m.id === doc.moduleId);
-	if (module) {
-		module.documents = (module.documents ?? []).filter((x) => x !== id);
-		module.updatedAt = new Date().toISOString();
-	}
-
-	db.documents = (db.documents ?? []).filter((d) => d.id !== id);
-	await writeDb(db);
-	res.json({ ok: true });
-});
 
 async function handleImageUpload(req, res) {
 	const { dataUrl } = req.body ?? {};
@@ -327,12 +165,250 @@ async function handleImageUpload(req, res) {
 	res.status(201).json({ url: `/uploads/${name}` });
 }
 
-app.post('/api/uploads', requireAuth(), handleImageUpload);
-app.post('/api/admin/uploads', requireAuth(), handleImageUpload);
+app.post('/api/uploads', requireAuth(), asyncHandler(handleImageUpload));
+app.post('/api/admin/uploads', requireAuth(), asyncHandler(handleImageUpload));
+
+async function computeUniqueSlug(baseSlug) {
+	let finalSlug = baseSlug;
+	for (let i = 2; ; i += 1) {
+		const exists = await prisma.module.findUnique({
+			where: { slug: finalSlug },
+			select: { id: true },
+		});
+		if (!exists) return finalSlug;
+		finalSlug = `${baseSlug}-${i}`;
+	}
+}
+
+function toPublicModule(module, documents) {
+	return {
+		id: module.id,
+		slug: module.slug,
+		title: module.title,
+		preview: module.preview,
+		description: module.description,
+		documents: (documents ?? []).map((d) => ({
+			id: d.id,
+			title: d.title,
+			updatedAt: d.updatedAt,
+		})),
+	};
+}
+
+function toAdminModule(module, documents) {
+	return {
+		...toPublicModule(module, documents),
+		updatedAt: module.updatedAt,
+		createdAt: module.createdAt,
+	};
+}
+
+app.get('/api/health', asyncHandler(async (_req, res) => {
+	try {
+		await prisma.$queryRaw`SELECT 1`;
+		return res.json({
+			ok: true,
+			port,
+			uploads: true,
+			db: true,
+			version: 'pg_prisma_v1',
+		});
+	} catch {
+		return res.status(500).json({ ok: false, db: false });
+	}
+}));
+
+app.get('/api/modules', asyncHandler(async (_req, res) => {
+	const modules = await prisma.module.findMany({
+		select: { id: true, slug: true, title: true, preview: true },
+		orderBy: { updatedAt: 'desc' },
+	});
+	res.json({ modules });
+}));
+
+app.get('/api/modules/:slug', asyncHandler(async (req, res) => {
+	const module = await prisma.module.findUnique({
+		where: { slug: req.params.slug },
+	});
+	if (!module) return res.status(404).json({ error: 'not_found' });
+
+	const documents = await prisma.document.findMany({
+		where: { moduleId: module.id },
+		select: { id: true, title: true, updatedAt: true },
+		orderBy: { updatedAt: 'desc' },
+	});
+
+	res.json({ module: toPublicModule(module, documents) });
+}));
+
+app.get('/api/documents/:id', asyncHandler(async (req, res) => {
+	const document = await prisma.document.findUnique({ where: { id: req.params.id } });
+	if (!document) return res.status(404).json({ error: 'not_found' });
+	res.json({ document });
+}));
+
+app.post('/api/auth/login', rateLimitLogin, asyncHandler(async (req, res) => {
+	const { login, password } = req.body ?? {};
+	const creds = getAdminCredentials();
+	if (login !== creds.login || password !== creds.password) {
+		return res.status(401).json({ error: 'invalid_credentials' });
+	}
+	const { token, expiresAt } = await createSession();
+	res.json({ token, expiresAt });
+}));
+
+app.post('/api/auth/logout', asyncHandler(async (req, res) => {
+	const token = extractBearerToken(req);
+	if (token) await deleteSession(token);
+	res.json({ ok: true });
+}));
+
+app.get('/api/admin/modules', requireAuth(), asyncHandler(async (_req, res) => {
+	const modules = await prisma.module.findMany({
+		select: { id: true, slug: true, title: true, preview: true, updatedAt: true },
+		orderBy: { updatedAt: 'desc' },
+	});
+	res.json({ modules });
+}));
+
+app.get('/api/admin/modules/:id', requireAuth(), asyncHandler(async (req, res) => {
+	const module = await prisma.module.findUnique({ where: { id: req.params.id } });
+	if (!module) return res.status(404).json({ error: 'not_found' });
+
+	const documents = await prisma.document.findMany({
+		where: { moduleId: module.id },
+		select: { id: true, title: true, updatedAt: true },
+		orderBy: { updatedAt: 'desc' },
+	});
+
+	res.json({ module: toAdminModule(module, documents) });
+}));
+
+app.post('/api/admin/modules', requireAuth(), asyncHandler(async (req, res) => {
+	const { title, preview, description, slug } = req.body ?? {};
+	if (!title || String(title).trim().length < 2) {
+		return res.status(400).json({ error: 'title_required' });
+	}
+
+	const baseSlug = String(slug ?? slugify(title) ?? '').trim() || uuidv4().slice(0, 8);
+	const finalSlug = await computeUniqueSlug(baseSlug);
+
+	const now = new Date();
+	const module = await prisma.module.create({
+		data: {
+			slug: finalSlug,
+			title: String(title).trim(),
+			preview: String(preview ?? '🧩'),
+			description: String(description ?? ''),
+			createdAt: now,
+			updatedAt: now,
+		},
+	});
+
+	res.status(201).json({ module: toAdminModule(module, []) });
+}));
+
+app.put('/api/admin/modules/:id', requireAuth(), asyncHandler(async (req, res) => {
+	const { id } = req.params;
+	const { title, preview, description } = req.body ?? {};
+
+	const existing = await prisma.module.findUnique({ where: { id }, select: { id: true } });
+	if (!existing) return res.status(404).json({ error: 'not_found' });
+
+	const module = await prisma.module.update({
+		where: { id },
+		data: {
+			...(title != null ? { title: String(title).trim() } : {}),
+			...(preview != null ? { preview: String(preview) } : {}),
+			...(description != null ? { description: String(description) } : {}),
+			updatedAt: new Date(),
+		},
+	});
+
+	const documents = await prisma.document.findMany({
+		where: { moduleId: module.id },
+		select: { id: true, title: true, updatedAt: true },
+		orderBy: { updatedAt: 'desc' },
+	});
+
+	res.json({ module: toAdminModule(module, documents) });
+}));
+
+app.delete('/api/admin/modules/:id', requireAuth(), asyncHandler(async (req, res) => {
+	const { id } = req.params;
+
+	const existing = await prisma.module.findUnique({ where: { id }, select: { id: true } });
+	if (!existing) return res.status(404).json({ error: 'not_found' });
+
+	await prisma.module.delete({ where: { id } });
+	res.json({ ok: true });
+}));
+
+app.post('/api/admin/modules/:moduleId/documents', requireAuth(), asyncHandler(async (req, res) => {
+	const { moduleId } = req.params;
+	const { title, content } = req.body ?? {};
+	if (!title || String(title).trim().length < 2) {
+		return res.status(400).json({ error: 'title_required' });
+	}
+
+	const module = await prisma.module.findUnique({ where: { id: moduleId }, select: { id: true } });
+	if (!module) return res.status(404).json({ error: 'module_not_found' });
+
+	const doc = await prisma.document.create({
+		data: {
+			moduleId,
+			title: String(title).trim(),
+			content: String(content ?? ''),
+			updatedAt: new Date(),
+		},
+	});
+
+	res.status(201).json({ document: doc });
+}));
+
+app.put('/api/admin/documents/:id', requireAuth(), asyncHandler(async (req, res) => {
+	const { id } = req.params;
+	const { title, content } = req.body ?? {};
+
+	const existing = await prisma.document.findUnique({ where: { id }, select: { id: true } });
+	if (!existing) return res.status(404).json({ error: 'not_found' });
+
+	const document = await prisma.document.update({
+		where: { id },
+		data: {
+			...(title != null ? { title: String(title).trim() } : {}),
+			...(content != null ? { content: String(content) } : {}),
+			updatedAt: new Date(),
+		},
+	});
+
+	res.json({ document });
+}));
+
+app.delete('/api/admin/documents/:id', requireAuth(), asyncHandler(async (req, res) => {
+	const { id } = req.params;
+	const existing = await prisma.document.findUnique({ where: { id }, select: { id: true } });
+	if (!existing) return res.status(404).json({ error: 'not_found' });
+
+	await prisma.document.delete({ where: { id } });
+	res.json({ ok: true });
+}));
+
+app.use('/api', (_req, res) => {
+	res.status(404).json({ error: 'not_found' });
+});
+
+app.use((err, req, res, next) => {
+	const code = err?.message === 'cors_not_allowed' ? 403 : 500;
+	if (code !== 403) {
+		console.error('[server] error:', err);
+	}
+	if (res.headersSent) return next(err);
+	res.status(code).json({ error: code === 403 ? 'cors_not_allowed' : 'internal_error' });
+});
 
 const server = app.listen(port, () => {
 	console.log(`[server] http://localhost:${port}`);
-	console.log(`[server] db: ${DB_FILE}`);
 });
 
 server.on('error', (err) => {
@@ -342,3 +418,20 @@ server.on('error', (err) => {
 	}
 	throw err;
 });
+
+async function shutdown(signal) {
+	try {
+		console.log(`[server] ${signal} received, shutting down...`);
+		server.close(() => {
+			console.log('[server] http server closed');
+		});
+		await prisma.$disconnect();
+	} catch (e) {
+		console.error('[server] shutdown failed:', e);
+	} finally {
+		process.exit(0);
+	}
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

@@ -61,10 +61,15 @@ const moduleItem = ref<ModuleDetail | null>(null);
 const doc = ref<DocumentItem | null>(null);
 
 function resolveUploadSrc(src: string) {
-	const raw = String(import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/$/, '');
-	if (!raw) return src;
-	const base = raw.endsWith('/api') ? raw.slice(0, -4) : raw;
-	if (src.startsWith('/uploads/')) return `${base}${src}`;
+	const raw = String(import.meta.env.VITE_API_BASE_URL ?? '')
+		.trim()
+		.replace(/\/$/, '');
+	const base = raw ? (raw.endsWith('/api') ? raw.slice(0, -4) : raw) : '';
+
+	const localAbs = /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(\/uploads\/.+)$/i.exec(src);
+	if (localAbs?.[1]) src = localAbs[1];
+
+	if (src.startsWith('/uploads/')) return base ? `${base}${src}` : src;
 	return src;
 }
 
@@ -72,10 +77,14 @@ function parseBlocks(raw: string) {
 	const text = String(raw ?? '').replace(/\r\n/g, '\n');
 	const lines = text.split('\n');
 	const blocks: Array<
-		| { type: 'p'; text: string }
-		| { type: 'img'; src: string; alt: string }
-		| { type: 'space' }
+		{ type: 'p'; text: string } | { type: 'img'; src: string; alt: string } | { type: 'space' }
 	> = [];
+
+	function pushText(t: string) {
+		const s = String(t ?? '');
+		if (!s.trim()) return;
+		blocks.push({ type: 'p', text: s });
+	}
 
 	for (const line of lines) {
 		const trimmed = line.trim();
@@ -84,18 +93,49 @@ function parseBlocks(raw: string) {
 			continue;
 		}
 
-		const m = /^!\[([^\]]*)\]\(([^)]+)\)$/.exec(trimmed);
-		if (m) {
-			const alt = String(m[1] ?? '').trim();
-			const src = String(m[2] ?? '').trim();
-			const ok = src.startsWith('/uploads/') || src.startsWith('http://') || src.startsWith('https://');
+		const exact = /^!\[([^\]]*)\]\(([^)]+)\)$/.exec(trimmed);
+		if (exact) {
+			const alt = String(exact[1] ?? '').trim();
+			const src = String(exact[2] ?? '').trim();
+			const ok =
+				src.startsWith('/uploads/') ||
+				src.startsWith('http://') ||
+				src.startsWith('https://');
 			if (ok) {
 				blocks.push({ type: 'img', src: resolveUploadSrc(src), alt });
 				continue;
 			}
 		}
 
-		blocks.push({ type: 'p', text: line });
+		const re = /!\[([^\]]*)\]\(([^)]+)\)/g;
+		let last = 0;
+		let matched = false;
+		for (const m of line.matchAll(re)) {
+			matched = true;
+			const idx = m.index ?? 0;
+			if (idx > last) pushText(line.slice(last, idx));
+
+			const alt = String(m[1] ?? '').trim();
+			const src = String(m[2] ?? '').trim();
+			const ok =
+				src.startsWith('/uploads/') ||
+				src.startsWith('http://') ||
+				src.startsWith('https://');
+			if (ok) {
+				blocks.push({ type: 'img', src: resolveUploadSrc(src), alt });
+			} else {
+				pushText(String(m[0] ?? ''));
+			}
+
+			last = idx + String(m[0] ?? '').length;
+		}
+
+		if (matched) {
+			if (last < line.length) pushText(line.slice(last));
+			continue;
+		}
+
+		pushText(line);
 	}
 
 	return blocks;
@@ -168,7 +208,6 @@ watch([slug, docId], load);
 		letter-spacing: 0.08em;
 		margin-bottom: 0.75rem;
 	}
-
 
 	&__content {
 		padding: 2rem;

@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.env
+.env.*
+server/uploads
+coverage
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log

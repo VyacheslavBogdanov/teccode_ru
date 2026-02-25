@@ -49,6 +49,8 @@
 import { ref } from 'vue';
 import SubmitButton from './SubmitButton.vue';
 
+defineOptions({ name: 'ContactFormForm' });
+
 const SUCCESS_MESSAGE_TIMEOUT = 4000;
 
 const name = ref('');

@@ -37,7 +37,6 @@
 	background-position: center bottom;
 	background-size: 1000px auto;
 
-	
 	@media (max-height: 1020px), (max-width: 840px) {
 		background-size: 700px auto;
 	}
@@ -126,7 +125,6 @@
 		text-transform: uppercase;
 		margin-bottom: 1.5rem;
 
-		
 		text-align: left;
 		letter-spacing: 0.08em;
 		word-spacing: normal;

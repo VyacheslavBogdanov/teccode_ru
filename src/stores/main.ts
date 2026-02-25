@@ -12,10 +12,8 @@ export const useMainStore = defineStore('main', {
 		companyName: 'TechCode',
 		year: new Date().getFullYear(),
 
-		// общий каталог ВСЕХ типов документов
 		documentsCatalog: { ...DOCUMENTS_CATALOG } as DocumentsCatalog,
 
-		// какие документы есть у конкретного модуля (если не задано — берём дефолт)
 		moduleDocs: {} as ModuleDocsMap,
 	}),
 
@@ -43,7 +41,6 @@ export const useMainStore = defineStore('main', {
 			this.companyName = name;
 		},
 
-		// если позже появятся разные наборы документов по модулям
 		setModuleDocs(slug: ModuleSlug, docIds: DocId[]) {
 			this.moduleDocs[slug] = docIds;
 		},

@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia';
 import { adminApi } from '@/admin/api/admin';
-import { clearStoredAdminSession, readStoredAdminSession, writeStoredAdminSession } from '@/admin/auth';
+import {
+	clearStoredAdminSession,
+	readStoredAdminSession,
+	writeStoredAdminSession,
+} from '@/admin/auth';
 
 export const useAdminStore = defineStore('admin', {
 	state: () => {
@@ -28,8 +32,7 @@ export const useAdminStore = defineStore('admin', {
 		async logout() {
 			try {
 				if (this.token) await adminApi.logout(this.token);
-			} catch {
-			}
+			} catch {}
 			this.token = '';
 			this.expiresAt = 0;
 			clearStoredAdminSession();

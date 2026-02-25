@@ -25,145 +25,177 @@
 				</div>
 			</header>
 
-		<p v-if="loading" class="admin__muted">Загрузка…</p>
-		<p v-else-if="!moduleItem" class="admin__muted">Модуль не найден</p>
+			<p v-if="loading" class="admin__muted">Загрузка…</p>
+			<p v-else-if="!moduleItem" class="admin__muted">Модуль не найден</p>
 
-		<div v-else class="admin__grid">
-			<section class="admin__card ui-panel">
-				<h2 class="admin__card-title">Параметры</h2>
-				<form class="admin__form" @submit.prevent="onSave">
-					<label class="admin__label">
-						<span>Название</span>
-						<input class="admin__input" v-model="editTitle" />
-					</label>
-					<label class="admin__label">
-						<span>Добавить превью</span>
-						<div class="admin__file">
-							<input
-								ref="editPreviewInput"
-								id="editPreviewFile"
-								class="admin__file-input"
-								type="file"
-								accept="image/*"
-								@change="onEditPreviewFile"
-							/>
-							<label class="admin__file-btn" for="editPreviewFile">Выбрать файл</label>
-							<span class="admin__file-name">{{ editPreviewFileLabel }}</span>
-						</div>
-						<span class="admin__hint">PNG/JPG/WebP, до 3 МБ</span>
-						<div v-if="editPreview" class="admin__preview">
-							<img v-if="isImagePreview(editPreview)" :src="editPreview" alt="Превью" />
-							<span v-else>{{ editPreview }}</span>
-						</div>
-					</label>
-					<label class="admin__label">
-						<span>Описание</span>
-						<textarea class="admin__textarea" rows="7" v-model="editDescription" />
-					</label>
-					<button class="ui-cta" type="submit" :disabled="saving">
-						{{ saving ? 'Сохраняем…' : 'Сохранить' }}
-					</button>
-					<p v-if="saveOk" class="admin__ok">{{ saveOk }}</p>
-					<p v-if="saveError" class="admin__error">{{ saveError }}</p>
-				</form>
-			</section>
-
-			<section class="admin__card ui-panel">
-				<h2 class="admin__card-title">Документы</h2>
-
-				<form class="admin__form admin__form--inline" @submit.prevent="onCreateDoc">
-					<input
-						class="admin__input"
-						v-model="newDocTitle"
-						placeholder="Название документа"
-						:disabled="saving || creatingDoc"
-					/>
-					<button class="admin__btn" type="submit" :disabled="creatingDoc || saving">Добавить</button>
-				</form>
-				<p v-if="docError" class="admin__error">{{ docError }}</p>
-
-				<ul v-if="moduleItem.documents.length" class="admin__list">
-					<li v-for="d in moduleItem.documents" :key="d.id" class="admin__list-item">
-						<div class="admin__module-main">
-							<div class="admin__module-title">{{ d.title }}</div>
-							<div class="admin__module-meta">id: {{ d.id }}</div>
-						</div>
-						<div class="admin__module-actions">
-							<a
-								:href="publicDocHref(d.id)"
-								target="_blank"
-								rel="noopener"
-								class="admin__btn"
-								:class="{ 'admin__btn--disabled': saving }"
-							>
-								На сайте
-							</a>
-							<button class="admin__btn" type="button" @click="onEditDoc(d.id)" :disabled="saving">
-								Редактировать
-							</button>
-							<button
-								class="admin__btn admin__btn--danger"
-								type="button"
-								@click="onDeleteDoc(d.id)"
-								:disabled="saving"
-							>
-								Удалить
-							</button>
-						</div>
-					</li>
-				</ul>
-				<p v-else class="admin__muted">Документов пока нет</p>
-
-				<div v-if="editingDoc" class="admin__editor" :class="{ 'admin__editor--disabled': saving }">
-					<h3 class="admin__card-title">Редактирование документа</h3>
-					<label class="admin__label">
-						<span>Название</span>
-						<input class="admin__input" v-model="editingDocTitle" :disabled="saving || savingDoc" />
-					</label>
-					<label class="admin__label">
-						<span>Текст</span>
-						<textarea
-							ref="docTextarea"
-							class="admin__textarea"
-							rows="10"
-							v-model="editingDocContent"
-							:disabled="saving || savingDoc"
-						/>
-					</label>
-					<label class="admin__label">
-						<span>Изображение</span>
-						<div class="admin__file">
-							<input
-								ref="docImageInput"
-								id="docImageFile"
-								class="admin__file-input"
-								type="file"
-								accept="image/*"
-								:disabled="uploadingImage || saving || savingDoc"
-								@change="onDocImageFile"
-							/>
-							<label
-								class="admin__file-btn"
-								:class="{ 'admin__file-btn--disabled': uploadingImage }"
-								for="docImageFile"
-							>
-								Выбрать изображение
-							</label>
-							<span class="admin__file-name">{{ docImageFileName || 'Файл не выбран' }}</span>
-						</div>
-						<span class="admin__hint">PNG/JPG/WebP/GIF, до 3 МБ. Вставится в позицию курсора.</span>
-						<p v-if="uploadError" class="admin__error">{{ uploadError }}</p>
-					</label>
-					<div class="admin__editor-actions">
-						<button class="ui-cta" type="button" @click="onSaveDoc" :disabled="savingDoc || saving">
-							{{ savingDoc ? 'Сохраняем…' : 'Сохранить документ' }}
+			<div v-else class="admin__grid">
+				<section class="admin__card ui-panel">
+					<h2 class="admin__card-title">Параметры</h2>
+					<form class="admin__form" @submit.prevent="onSave">
+						<label class="admin__label">
+							<span>Название</span>
+							<input class="admin__input" v-model="editTitle" />
+						</label>
+						<label class="admin__label">
+							<span>Добавить превью</span>
+							<div class="admin__file">
+								<input
+									ref="editPreviewInput"
+									id="editPreviewFile"
+									class="admin__file-input"
+									type="file"
+									accept="image/*"
+									@change="onEditPreviewFile"
+								/>
+								<label class="admin__file-btn" for="editPreviewFile"
+									>Выбрать файл</label
+								>
+								<span class="admin__file-name">{{ editPreviewFileLabel }}</span>
+							</div>
+							<span class="admin__hint">PNG/JPG/WebP, до 3 МБ</span>
+							<div v-if="editPreview" class="admin__preview">
+								<img
+									v-if="isImagePreview(editPreview)"
+									:src="editPreview"
+									alt="Превью"
+								/>
+								<span v-else>{{ editPreview }}</span>
+							</div>
+						</label>
+						<label class="admin__label">
+							<span>Описание</span>
+							<textarea class="admin__textarea" rows="7" v-model="editDescription" />
+						</label>
+						<button class="ui-cta" type="submit" :disabled="saving">
+							{{ saving ? 'Сохраняем…' : 'Сохранить' }}
 						</button>
-						<button class="admin__btn" type="button" @click="onCancelDoc">Закрыть</button>
+						<p v-if="saveOk" class="admin__ok">{{ saveOk }}</p>
+						<p v-if="saveError" class="admin__error">{{ saveError }}</p>
+					</form>
+				</section>
+
+				<section class="admin__card ui-panel">
+					<h2 class="admin__card-title">Документы</h2>
+
+					<form class="admin__form admin__form--inline" @submit.prevent="onCreateDoc">
+						<input
+							class="admin__input"
+							v-model="newDocTitle"
+							placeholder="Название документа"
+							:disabled="saving || creatingDoc"
+						/>
+						<button class="admin__btn" type="submit" :disabled="creatingDoc || saving">
+							Добавить
+						</button>
+					</form>
+					<p v-if="docError" class="admin__error">{{ docError }}</p>
+
+					<ul v-if="moduleItem.documents.length" class="admin__list">
+						<li v-for="d in moduleItem.documents" :key="d.id" class="admin__list-item">
+							<div class="admin__module-main">
+								<div class="admin__module-title">{{ d.title }}</div>
+								<div class="admin__module-meta">id: {{ d.id }}</div>
+							</div>
+							<div class="admin__module-actions">
+								<a
+									:href="publicDocHref(d.id)"
+									target="_blank"
+									rel="noopener"
+									class="admin__btn"
+									:class="{ 'admin__btn--disabled': saving }"
+								>
+									На сайте
+								</a>
+								<button
+									class="admin__btn"
+									type="button"
+									@click="onEditDoc(d.id)"
+									:disabled="saving"
+								>
+									Редактировать
+								</button>
+								<button
+									class="admin__btn admin__btn--danger"
+									type="button"
+									@click="onDeleteDoc(d.id)"
+									:disabled="saving"
+								>
+									Удалить
+								</button>
+							</div>
+						</li>
+					</ul>
+					<p v-else class="admin__muted">Документов пока нет</p>
+
+					<div
+						v-if="editingDoc"
+						class="admin__editor"
+						:class="{ 'admin__editor--disabled': saving }"
+					>
+						<h3 class="admin__card-title">Редактирование документа</h3>
+						<label class="admin__label">
+							<span>Название</span>
+							<input
+								class="admin__input"
+								v-model="editingDocTitle"
+								:disabled="saving || savingDoc"
+							/>
+						</label>
+						<label class="admin__label">
+							<span>Текст</span>
+							<textarea
+								ref="docTextarea"
+								class="admin__textarea"
+								rows="10"
+								v-model="editingDocContent"
+								:disabled="saving || savingDoc"
+							/>
+						</label>
+						<label class="admin__label">
+							<span>Изображение</span>
+							<div class="admin__file">
+								<input
+									ref="docImageInput"
+									id="docImageFile"
+									class="admin__file-input"
+									type="file"
+									accept="image/*"
+									:disabled="uploadingImage || saving || savingDoc"
+									@change="onDocImageFile"
+								/>
+								<label
+									class="admin__file-btn"
+									:class="{ 'admin__file-btn--disabled': uploadingImage }"
+									for="docImageFile"
+								>
+									Выбрать изображение
+								</label>
+								<span class="admin__file-name">{{
+									docImageFileName || 'Файл не выбран'
+								}}</span>
+							</div>
+							<span class="admin__hint"
+								>PNG/JPG/WebP/GIF, до 3 МБ. Вставится в позицию курсора.</span
+							>
+							<p v-if="uploadError" class="admin__error">{{ uploadError }}</p>
+						</label>
+						<div class="admin__editor-actions">
+							<button
+								class="ui-cta"
+								type="button"
+								@click="onSaveDoc"
+								:disabled="savingDoc || saving"
+							>
+								{{ savingDoc ? 'Сохраняем…' : 'Сохранить документ' }}
+							</button>
+							<button class="admin__btn" type="button" @click="onCancelDoc">
+								Закрыть
+							</button>
+						</div>
+						<p v-if="docSaveError" class="admin__error">{{ docSaveError }}</p>
 					</div>
-					<p v-if="docSaveError" class="admin__error">{{ docSaveError }}</p>
-				</div>
-			</section>
-		</div>
+				</section>
+			</div>
 		</div>
 	</section>
 </template>
@@ -179,6 +211,14 @@ import { softwareApi, type DocumentItem, type ModuleDetail } from '@/api/softwar
 const route = useRoute();
 const router = useRouter();
 const store = useAdminStore();
+
+function toErrorMessage(err: unknown, fallback: string) {
+	if (err instanceof Error) return err.message || fallback;
+	if (err && typeof err === 'object' && 'message' in err) {
+		return String((err as { message?: unknown }).message ?? fallback);
+	}
+	return fallback;
+}
 
 const moduleId = computed(() => String(route.params.id ?? ''));
 
@@ -256,12 +296,16 @@ const docSaveError = ref('');
 
 const publicModuleHref = computed(() => {
 	if (!moduleItem.value) return '#';
-	return router.resolve({ name: ROUTES.module.name, params: { slug: moduleItem.value.slug } }).href;
+	return router.resolve({ name: ROUTES.module.name, params: { slug: moduleItem.value.slug } })
+		.href;
 });
 
 function publicDocHref(docId: string) {
 	if (!moduleItem.value) return '#';
-	return router.resolve({ name: ROUTES.moduleDoc.name, params: { slug: moduleItem.value.slug, docId } }).href;
+	return router.resolve({
+		name: ROUTES.moduleDoc.name,
+		params: { slug: moduleItem.value.slug, docId },
+	}).href;
 }
 
 const docTextarea = ref<HTMLTextAreaElement | null>(null);
@@ -281,15 +325,16 @@ function insertIntoDoc(snippet: string) {
 	const end = Number.isFinite(el.selectionEnd) ? el.selectionEnd : current.length;
 	const before = current.slice(0, start);
 	const after = current.slice(end);
-	const insertion = `${snippet}\n`;
+	const needsLeadingNewline = before.length > 0 && !before.endsWith('\n');
+	const needsTrailingNewline = after.length > 0 && !after.startsWith('\n');
+	const insertion = `${needsLeadingNewline ? '\n' : ''}${snippet}${needsTrailingNewline ? '\n' : '\n'}`;
 	editingDocContent.value = `${before}${insertion}${after}`;
 	nextTick(() => {
 		try {
 			el.focus();
 			const pos = before.length + insertion.length;
 			el.setSelectionRange(pos, pos);
-		} catch {
-		}
+		} catch {}
 	});
 }
 
@@ -321,10 +366,11 @@ async function onDocImageFile(e: Event) {
 		docImageFileName.value = '';
 		if (docImageInput.value) docImageInput.value.value = '';
 		if (input) input.value = '';
-	} catch (err: any) {
-		const msg = String(err?.message ?? 'Ошибка загрузки');
+	} catch (err: unknown) {
+		const msg = toErrorMessage(err, 'Ошибка загрузки');
 		if (msg.includes('404')) {
-			uploadError.value = 'Не найден маршрут загрузки (404). Проверь что backend запущен и обновлён.';
+			uploadError.value =
+				'Не найден маршрут загрузки (404). Проверь что backend запущен и обновлён.';
 		} else {
 			uploadError.value = msg;
 		}
@@ -372,11 +418,7 @@ async function onSave() {
 			description: editDescription.value,
 		};
 		if (previewDirty.value) payload.preview = editPreview.value;
-		const { module } = await adminApi.updateModule(
-			moduleItem.value.id,
-			payload,
-			store.token,
-		);
+		const { module } = await adminApi.updateModule(moduleItem.value.id, payload, store.token);
 		moduleItem.value = module;
 		previewDirty.value = false;
 		editPreviewFileName.value = '';
@@ -386,8 +428,8 @@ async function onSave() {
 			saveOk.value = '';
 			saveOkTimer = null;
 		}, 2000);
-	} catch (e: any) {
-		saveError.value = e?.message ?? 'Ошибка';
+	} catch (e: unknown) {
+		saveError.value = toErrorMessage(e, 'Ошибка');
 	} finally {
 		saving.value = false;
 	}
@@ -405,8 +447,8 @@ async function onCreateDoc() {
 		);
 		newDocTitle.value = '';
 		await load();
-	} catch (e: any) {
-		docError.value = e?.message ?? 'Ошибка';
+	} catch (e: unknown) {
+		docError.value = toErrorMessage(e, 'Ошибка');
 	} finally {
 		creatingDoc.value = false;
 	}
@@ -437,8 +479,8 @@ async function onSaveDoc() {
 		);
 		editingDoc.value = null;
 		await load();
-	} catch (e: any) {
-		docSaveError.value = e?.message ?? 'Ошибка сохранения';
+	} catch (e: unknown) {
+		docSaveError.value = toErrorMessage(e, 'Ошибка сохранения');
 	} finally {
 		savingDoc.value = false;
 	}
@@ -624,7 +666,6 @@ watch(moduleId, load);
 		}
 	}
 
-
 	&__hint {
 		font-size: 0.8rem;
 		color: rgba(17, 24, 39, 0.55);
@@ -681,7 +722,6 @@ watch(moduleId, load);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-
 
 	&__preview {
 		margin-top: 0.55rem;
@@ -778,8 +818,6 @@ watch(moduleId, load);
 		opacity: 0.6;
 		pointer-events: none;
 	}
-
-
 
 	&__editor-actions {
 		display: flex;

@@ -47,6 +47,8 @@ import { onMounted, ref } from 'vue';
 import { ROUTES } from '@/router/routes';
 import { softwareApi, type ModuleListItem } from '@/api/software';
 
+defineOptions({ name: 'SoftwareSolutionsSoftware' });
+
 const modules = ref<ModuleListItem[]>([]);
 const loading = ref(false);
 const error = ref('');
@@ -169,7 +171,7 @@ onMounted(async () => {
 		border-radius: 18px;
 		display: grid;
 		place-items: center;
-		border: 1px solid rgba(255, 255, 255, 0.10);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		background: rgba(0, 0, 0, 0.25);
 		box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65);
 		overflow: hidden;

@@ -13,15 +13,27 @@
 				</RouterLink>
 			</header>
 
-			<div class="products__grid">
+			<p v-if="loading" class="products__muted">Загрузка…</p>
+			<p v-else-if="error" class="products__error">{{ error }}</p>
+			<p v-else-if="!modules.length" class="products__muted">Пока нет модулей</p>
+			<div v-else class="products__grid">
 				<RouterLink
-					v-for="(m, i) in MODULES"
+					v-for="(m, i) in modules"
 					:key="m.slug"
 					class="products__card ui-card"
 					:to="{ name: ROUTES.module.name, params: { slug: m.slug } }"
 					:style="{ animationDelay: `${0.05 * i}s` }"
 				>
-					<div class="products__icon" aria-hidden="true">{{ m.icon }}</div>
+					<div class="products__icon" aria-hidden="true">
+						<img
+							v-if="isImagePreview(m.preview)"
+							class="products__icon-img"
+							:src="m.preview"
+							:alt="m.title"
+							loading="lazy"
+						/>
+						<span v-else class="products__icon-fallback">{{ m.preview }}</span>
+					</div>
 					<p class="products__name">{{ m.title }}</p>
 				</RouterLink>
 			</div>
@@ -31,8 +43,38 @@
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
+import { onMounted, ref } from 'vue';
 import { ROUTES } from '@/router/routes';
-import { MODULES } from '@/data/modules';
+import { softwareApi, type ModuleListItem } from '@/api/software';
+
+const modules = ref<ModuleListItem[]>([]);
+const loading = ref(false);
+const error = ref('');
+
+function isImagePreview(value: unknown): boolean {
+	const v = String(value ?? '').trim();
+	if (!v) return false;
+	return (
+		v.startsWith('data:image/') ||
+		v.startsWith('http://') ||
+		v.startsWith('https://') ||
+		v.startsWith('/')
+	);
+}
+
+onMounted(async () => {
+	loading.value = true;
+	error.value = '';
+	try {
+		const { modules: apiModules } = await softwareApi.getModules();
+		modules.value = apiModules;
+	} catch {
+		error.value = 'Не удалось загрузить список модулей';
+		modules.value = [];
+	} finally {
+		loading.value = false;
+	}
+});
 </script>
 
 <style scoped lang="scss">
@@ -74,7 +116,16 @@ import { MODULES } from '@/data/modules';
 		margin-top: 0.75rem;
 	}
 
+	&__muted {
+		color: rgba($main-text-color, 0.7);
+	}
+
+	&__error {
+		color: $main-red-color;
+	}
+
 	&__grid {
+		position: relative;
 		margin-top: 2.5rem;
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -113,7 +164,26 @@ import { MODULES } from '@/data/modules';
 	}
 
 	&__icon {
-		font-size: 2.7rem;
+		width: 76px;
+		height: 76px;
+		border-radius: 18px;
+		display: grid;
+		place-items: center;
+		border: 1px solid rgba(255, 255, 255, 0.10);
+		background: rgba(0, 0, 0, 0.25);
+		box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65);
+		overflow: hidden;
+	}
+
+	&__icon-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	&__icon-fallback {
+		font-size: 2.4rem;
 		line-height: 1;
 	}
 

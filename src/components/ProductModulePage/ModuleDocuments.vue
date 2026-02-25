@@ -8,7 +8,7 @@
 				:to="{ name: ROUTES.moduleDoc.name, params: { slug: moduleSlug, docId: doc.id } }"
 				:style="{ animationDelay: `${0.05 * i}s` }"
 			>
-				<span class="docs__icon" aria-hidden="true">{{ doc.badge ?? 'PDF' }}</span>
+				<span class="docs__icon" aria-hidden="true">TXT</span>
 				<span class="docs__title">{{ doc.title }}</span>
 			</RouterLink>
 		</div>
@@ -16,20 +16,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { ROUTES } from '@/router/routes';
-import { useMainStore } from '@/stores/main';
-import type { DocId } from '@/data/documents';
-import type { ModuleSlug } from '@/data/modules';
+import type { ModuleDocumentLink } from '@/api/software';
 
 const props = defineProps<{
-	moduleSlug: ModuleSlug;
-	docIds: DocId[];
+	moduleSlug: string;
+	docs: ModuleDocumentLink[];
 }>();
-
-const store = useMainStore();
-const docs = computed(() => store.documentsByIds(props.docIds));
 </script>
 
 <style scoped lang="scss">

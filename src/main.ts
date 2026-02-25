@@ -4,6 +4,7 @@ import App from './App.vue';
 import router from './router/index';
 
 import './assets/styles/main.scss';
+import './admin/styles/admin.scss';
 
 const app = createApp(App);
 

@@ -14,6 +14,7 @@ import {
 	extractBearerToken,
 } from './lib/auth.js';
 import { slugify } from './lib/slugify.js';
+import { isMailConfigured, sendContactEmail } from './lib/mailer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -245,6 +246,66 @@ app.get('/api/documents/:id', asyncHandler(async (req, res) => {
 	const document = await prisma.document.findUnique({ where: { id: req.params.id } });
 	if (!document) return res.status(404).json({ error: 'not_found' });
 	res.json({ document });
+}));
+
+const contactAttempts = new Map();
+
+function rateLimitContact(req, res, next) {
+	const ip = String(req.ip ?? req.connection?.remoteAddress ?? 'unknown');
+	const now = Date.now();
+	const windowMs = 15 * 60 * 1000;
+	const max = 5;
+
+	const entry = contactAttempts.get(ip) ?? { count: 0, resetAt: now + windowMs };
+	if (now > entry.resetAt) {
+		entry.count = 0;
+		entry.resetAt = now + windowMs;
+	}
+	entry.count += 1;
+	contactAttempts.set(ip, entry);
+
+	if (entry.count > max) {
+		return res.status(429).json({ error: 'too_many_attempts' });
+	}
+	return next();
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+app.post('/api/contact', rateLimitContact, asyncHandler(async (req, res) => {
+	const rawName = String(req.body?.name ?? '').trim().slice(0, 200);
+	const rawEmail = String(req.body?.email ?? '').trim().slice(0, 200);
+	const rawMessage = String(req.body?.message ?? '').trim().slice(0, 5000);
+
+	if (rawName.length < 2) {
+		return res.status(400).json({ error: 'name_required' });
+	}
+	if (!EMAIL_RE.test(rawEmail)) {
+		return res.status(400).json({ error: 'invalid_email' });
+	}
+	if (rawMessage.length < 10) {
+		return res.status(400).json({ error: 'message_required' });
+	}
+
+	const submission = await prisma.contactSubmission.create({
+		data: { name: rawName, email: rawEmail, message: rawMessage },
+	});
+
+	if (!isMailConfigured()) {
+		return res.json({ ok: true });
+	}
+
+	try {
+		await sendContactEmail({ name: rawName, email: rawEmail, message: rawMessage });
+		await prisma.contactSubmission.update({
+			where: { id: submission.id },
+			data: { emailSent: true },
+		});
+		return res.json({ ok: true });
+	} catch (err) {
+		console.error('[server] email send failed:', err);
+		return res.status(500).json({ error: 'email_send_failed' });
+	}
 }));
 
 app.post('/api/auth/login', rateLimitLogin, asyncHandler(async (req, res) => {

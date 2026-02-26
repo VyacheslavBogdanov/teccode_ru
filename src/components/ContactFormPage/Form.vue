@@ -9,6 +9,7 @@
 				class="form__input"
 				placeholder="Иван Иванов"
 				required
+				:disabled="loading"
 			/>
 		</div>
 
@@ -21,6 +22,7 @@
 				class="form__input"
 				placeholder="you@example.com"
 				required
+				:disabled="loading"
 			/>
 		</div>
 
@@ -33,11 +35,15 @@
 				placeholder="Ваше сообщение…"
 				rows="5"
 				required
+				:disabled="loading"
 			></textarea>
 		</div>
 
 		<div class="form__actions">
-			<SubmitButton>Отправить</SubmitButton>
+			<SubmitButton :disabled="loading">
+				{{ loading ? 'Отправка...' : 'Отправить' }}
+			</SubmitButton>
+			<p v-if="error" class="form__error">{{ error }}</p>
 			<p v-if="submitted" class="form__success">
 				Сообщение отправлено. Мы свяжемся с вами в ближайшее время.
 			</p>
@@ -48,6 +54,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import SubmitButton from './SubmitButton.vue';
+import { contactApi } from '@/api/contact';
 
 defineOptions({ name: 'ContactFormForm' });
 
@@ -57,6 +64,8 @@ const name = ref('');
 const email = ref('');
 const message = ref('');
 const submitted = ref(false);
+const loading = ref(false);
+const error = ref('');
 
 const resetFields = () => {
 	name.value = '';
@@ -70,11 +79,24 @@ const scheduleHideSuccess = () => {
 	}, SUCCESS_MESSAGE_TIMEOUT);
 };
 
-const onSubmit = () => {
-	submitted.value = true;
+const onSubmit = async () => {
+	error.value = '';
+	loading.value = true;
 
-	resetFields();
-	scheduleHideSuccess();
+	try {
+		await contactApi.sendMessage({
+			name: name.value,
+			email: email.value,
+			message: message.value,
+		});
+		submitted.value = true;
+		resetFields();
+		scheduleHideSuccess();
+	} catch (e: unknown) {
+		error.value = e instanceof Error ? e.message : 'Произошла ошибка';
+	} finally {
+		loading.value = false;
+	}
 };
 </script>
 
@@ -149,6 +171,11 @@ const onSubmit = () => {
 		@media (max-width: 480px) {
 			align-items: stretch;
 		}
+	}
+
+	&__error {
+		font-size: 0.88rem;
+		color: $main-red-color;
 	}
 
 	&__success {

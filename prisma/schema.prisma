@@ -39,3 +39,14 @@ model Session {
   @@index([expiresAt])
 }
 
+model ContactSubmission {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String
+  message   String
+  emailSent Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
